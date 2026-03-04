@@ -20,7 +20,7 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
-func Migrate(ctx context.Context, log *zerolog.Logger, cfg *config.Config) error {
+func Migrate(ctx context.Context, logger *zerolog.Logger, cfg *config.Config) error {
 	hostPort := net.JoinHostPort(cfg.Database.Host, strconv.Itoa(cfg.Database.Port))
 
 	// URL-encode the password
@@ -52,9 +52,9 @@ func Migrate(ctx context.Context, log *zerolog.Logger, cfg *config.Config) error
 	to, _, _ := m.Version()
 
 	if from == to {
-		log.Info().Msgf("database schema up to date, version %d", to)
+		logger.Info().Msgf("database schema up to date, version %d", to)
 	} else {
-		log.Info().Msgf("migrated database schema, from %d to %d", from, to)
+		logger.Info().Msgf("migrated database schema, from %d to %d", from, to)
 	}
 
 	return nil

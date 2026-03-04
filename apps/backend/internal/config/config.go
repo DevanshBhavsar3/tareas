@@ -88,7 +88,7 @@ type NewRelic struct {
 }
 
 func Load() *Config {
-	log := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 
 	k := koanf.New(".")
 
@@ -96,21 +96,21 @@ func Load() *Config {
 		return strings.ToLower(strings.TrimPrefix(s, "TAREAS_"))
 	}), nil)
 	if err != nil {
-		log.Fatal().Err(err).Msg("could not load initial env variables")
+		logger.Fatal().Err(err).Msg("could not load initial env variables")
 	}
 
 	cfg := &Config{}
 
 	err = k.Unmarshal("", cfg)
 	if err != nil {
-		log.Fatal().Err(err).Msg("could not unmarshal config")
+		logger.Fatal().Err(err).Msg("could not unmarshal config")
 	}
 
 	validate := validator.New()
 
 	err = validate.Struct(cfg)
 	if err != nil {
-		log.Fatal().Err(err).Msg("config validation failed")
+		logger.Fatal().Err(err).Msg("config validation failed")
 	}
 
 	cfg.Observability.Environment = cfg.Primary.Env

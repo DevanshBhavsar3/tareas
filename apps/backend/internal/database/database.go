@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/DevanshBhavsar3/tareas/internal/config"
-	"github.com/DevanshBhavsar3/tareas/internal/logger"
+	loggerConfig "github.com/DevanshBhavsar3/tareas/internal/logger"
 	pgxzero "github.com/jackc/pgx-zerolog"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,13 +19,13 @@ import (
 )
 
 type Database struct {
-	Pool *pgxpool.Pool
-	log  *zerolog.Logger
+	Pool   *pgxpool.Pool
+	logger *zerolog.Logger
 }
 
 const DatabasePingTimeout = 10
 
-func New(cfg *config.Config, log *zerolog.Logger, loggerService *logger.LoggerService) (*Database, error) {
+func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerConfig.LoggerService) (*Database, error) {
 	hostPort := net.JoinHostPort(cfg.Database.Host, strconv.Itoa(cfg.Database.Port))
 
 	// URL-encode the password
@@ -50,12 +50,12 @@ func New(cfg *config.Config, log *zerolog.Logger, loggerService *logger.LoggerSe
 
 	// Add local tracer for development environment
 	if cfg.Primary.Env == "local" {
-		globalLevel := log.GetLevel()
-		pgxLogger := logger.NewPgxLogger(globalLevel)
+		globalLevel := logger.GetLevel()
+		pgxLogger := loggerConfig.NewPgxLogger(globalLevel)
 
 		localTracer := &tracelog.TraceLog{
 			Logger:   pgxzero.NewLogger(pgxLogger),
-			LogLevel: tracelog.LogLevel(logger.GetPgxTraceLogLevel(globalLevel)),
+			LogLevel: tracelog.LogLevel(loggerConfig.GetPgxTraceLogLevel(globalLevel)),
 		}
 
 		// Chain tracers - New Relic first, then local logging
@@ -78,8 +78,8 @@ func New(cfg *config.Config, log *zerolog.Logger, loggerService *logger.LoggerSe
 	}
 
 	database := &Database{
-		Pool: pool,
-		log:  log,
+		Pool:   pool,
+		logger: logger,
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), DatabasePingTimeout*time.Second)
@@ -89,12 +89,12 @@ func New(cfg *config.Config, log *zerolog.Logger, loggerService *logger.LoggerSe
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	log.Info().Msg("connected to the database")
+	logger.Info().Msg("connected to the database")
 
 	return database, nil
 }
 
 func (db *Database) Close() {
-	db.log.Info().Msg("closing database connection pool")
+	db.logger.Info().Msg("closing database connection pool")
 	db.Pool.Close()
 }
