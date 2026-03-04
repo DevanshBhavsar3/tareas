@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"embed"
 	"errors"
 	"fmt"
 	"net"
@@ -12,8 +13,12 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/rs/zerolog"
 )
+
+//go:embed migrations/*.sql
+var migrations embed.FS
 
 func Migrate(ctx context.Context, log *zerolog.Logger, cfg *config.Config) error {
 	hostPort := net.JoinHostPort(cfg.Database.Host, strconv.Itoa(cfg.Database.Port))
@@ -28,9 +33,14 @@ func Migrate(ctx context.Context, log *zerolog.Logger, cfg *config.Config) error
 		cfg.Database.SSLMode,
 	)
 
-	m, err := migrate.New("file://./internal/database/migrations", dsn)
+	source, err := iofs.New(migrations, "migrations")
 	if err != nil {
 		return fmt.Errorf("failed creating database migrations: %w", err)
+	}
+
+	m, err := migrate.NewWithSourceInstance("iofs", source, dsn)
+	if err != nil {
+		return fmt.Errorf("constructing database migration failed: %w", err)
 	}
 
 	from, _, _ := m.Version()
