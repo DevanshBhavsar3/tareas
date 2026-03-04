@@ -16,6 +16,10 @@ type Config struct {
 	Primary       `koanf:"primary" validate:"required"`
 	Server        `koanf:"server" validate:"required"`
 	Database      `koanf:"database" validate:"required"`
+	Auth          `koanf:"auth" validate:"required"`
+	Redis         `koanf:"redis" validate:"required"`
+	Integration   `koanf:"integration" validate:"required"`
+	AWS           `koanf:"aws" validate:"required"`
 	Observability `koanf:"observability" validate:"required"`
 }
 
@@ -44,11 +48,31 @@ type Database struct {
 	ConnMaxIdleTime int    `koanf:"conn_max_idle_time" validate:"required"`
 }
 
+type Redis struct {
+	Address string `koanf:"address" validate:"required"`
+}
+
+type Integration struct {
+	ResendAPIKey string `koanf:"resend_api_key" validate:"required"`
+}
+
+type Auth struct {
+	SecretKey string `koanf:"secret_key" validate:"required"`
+}
+
+type AWS struct {
+	Region          string `koanf:"region" validate:"required"`
+	AccessKeyId     string `koanf:"access_key_id" validate:"required"`
+	SecretAccessKey string `koanf:"secret_access_key" validate:"required"`
+	UploadBucket    string `koanf:"upload_bucket" validate:"required"`
+	EndpointUrl     string `koanf:"endpoint_url" validate:"required"`
+}
+
 type Observability struct {
 	ServiceName string   `koanf:"service_name" validate:"required"`
 	Environment string   `koanf:"environment" validate:"required"`
 	Logging     Logging  `koanf:"logging" validate:"required"`
-	NewRelic    NewRelic `koanf:"new_relic" validate:"required"`
+	NewRelic    NewRelic `koanf:"new_relic"`
 }
 
 type Logging struct {
@@ -64,7 +88,7 @@ type NewRelic struct {
 }
 
 func Load() *Config {
-	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+	log := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
 
 	k := koanf.New(".")
 
@@ -72,21 +96,21 @@ func Load() *Config {
 		return strings.ToLower(strings.TrimPrefix(s, "TAREAS_"))
 	}), nil)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("could not load initial env variables")
+		log.Fatal().Err(err).Msg("could not load initial env variables")
 	}
 
 	cfg := &Config{}
 
 	err = k.Unmarshal("", cfg)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("could not unmarshal config")
+		log.Fatal().Err(err).Msg("could not unmarshal config")
 	}
 
 	validate := validator.New()
 
 	err = validate.Struct(cfg)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("config validation failed")
+		log.Fatal().Err(err).Msg("config validation failed")
 	}
 
 	cfg.Observability.Environment = cfg.Primary.Env

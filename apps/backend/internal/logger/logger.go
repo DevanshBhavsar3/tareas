@@ -1,6 +1,8 @@
 package logger
 
 import (
+	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -13,7 +15,7 @@ import (
 )
 
 type LoggerService struct {
-	nrApp *newrelic.Application
+	NewRelicApp *newrelic.Application
 }
 
 func NewLoggerService(cfg config.Observability) *LoggerService {
@@ -41,13 +43,13 @@ func NewLoggerService(cfg config.Observability) *LoggerService {
 		return service
 	}
 
-	service.nrApp = app
+	service.NewRelicApp = app
 	return service
 }
 
 func (ls *LoggerService) Shutdown() {
-	if ls.nrApp != nil {
-		ls.nrApp.Shutdown(10 * time.Second)
+	if ls.NewRelicApp != nil {
+		ls.NewRelicApp.Shutdown(10 * time.Second)
 	}
 }
 
@@ -74,8 +76,8 @@ func New(cfg config.Observability, loggerService *LoggerService) zerolog.Logger 
 
 	if cfg.Environment == "production" && cfg.Logging.Format == "json" {
 		// Wrap with New Relic zerologWriter for log forwarding in production
-		if loggerService.nrApp != nil {
-			writer = zerologWriter.New(os.Stdout, loggerService.nrApp)
+		if loggerService.NewRelicApp != nil {
+			writer = zerologWriter.New(os.Stdout, loggerService.NewRelicApp)
 		} else {
 			writer = os.Stdout
 		}
@@ -96,4 +98,54 @@ func New(cfg config.Observability, loggerService *LoggerService) zerolog.Logger 
 	}
 
 	return logger
+}
+
+func NewPgxLogger(level zerolog.Level) zerolog.Logger {
+	writer := zerolog.ConsoleWriter{
+		Out:        os.Stdout,
+		TimeFormat: "2006-01-02 15:04:05",
+		FormatFieldValue: func(i any) string {
+			switch v := i.(type) {
+			case string:
+				// Clean and format SQL for better readability
+				if len(v) > 200 {
+					// Truncate very long SQL statements
+					return v[:200] + "..."
+				}
+				return v
+			case []byte:
+				var obj any
+				if err := json.Unmarshal(v, &obj); err == nil {
+					pretty, _ := json.MarshalIndent(obj, "", "    ")
+					return "\n" + string(pretty)
+				}
+				return string(v)
+			default:
+				return fmt.Sprintf("%v", v)
+			}
+		},
+	}
+
+	return zerolog.New(writer).
+		Level(level).
+		With().
+		Timestamp().
+		Str("component", "database").
+		Logger()
+}
+
+// GetPgxTraceLogLevel converts zerolog level to pgx tracelog level
+func GetPgxTraceLogLevel(level zerolog.Level) int {
+	switch level {
+	case zerolog.DebugLevel:
+		return 6 // tracelog.LogLevelDebug
+	case zerolog.InfoLevel:
+		return 4 // tracelog.LogLevelInfo
+	case zerolog.WarnLevel:
+		return 3 // tracelog.LogLevelWarn
+	case zerolog.ErrorLevel:
+		return 2 // tracelog.LogLevelError
+	default:
+		return 0 // tracelog.LogLevelNone
+	}
 }

@@ -1,7 +1,32 @@
-version: '3'
+version: "3"
+
+vars:
+  TAREAS_DB_DSN: '{{.TAREAS_DB_DSN | default ""}}'
 
 tasks:
   run:
     desc: run the backend application
     cmds:
       - go run ./cmd/tareas
+
+  migrations:new:
+    desc: create a new database migration
+    vars:
+      NAME: '{{.name | default ""}}'
+    cmds:
+      - |
+        if [ -z "{{.NAME}}" ]; then
+          echo "Error: name parameter is required"
+          echo "Usage: task migrations:new name=migration_name"
+          exit 1
+        fi
+      - echo 'Creating migration file for {{.NAME}}...'
+      - migrate create -ext sql -dir ./internal/database/migrations -seq {{.NAME}}
+    silent: true
+
+  migrations:up:
+    desc: apply all up database migrations
+    cmds:
+      - echo 'Running up migrations...'
+      - migrate -source file://./internal/database/migrations -database {{.TAREAS_DB_DSN}} up
+    silent: true
