@@ -100,6 +100,21 @@ func New(cfg config.Observability, loggerService *LoggerService) zerolog.Logger 
 	return logger
 }
 
+// WithTraceContext adds New Relic transaction context to logger
+func WithTraceContext(logger zerolog.Logger, txn *newrelic.Transaction) zerolog.Logger {
+	if txn == nil {
+		return logger
+	}
+
+	// Get trace metadata from transaction
+	metadata := txn.GetTraceMetadata()
+
+	return logger.With().
+		Str("trace.id", metadata.TraceID).
+		Str("span.id", metadata.SpanID).
+		Logger()
+}
+
 func NewPgxLogger(level zerolog.Level) zerolog.Logger {
 	writer := zerolog.ConsoleWriter{
 		Out:        os.Stdout,
