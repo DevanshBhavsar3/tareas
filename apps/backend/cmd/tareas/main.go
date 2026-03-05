@@ -2,13 +2,23 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"github.com/DevanshBhavsar3/tareas/internal/config"
 	"github.com/DevanshBhavsar3/tareas/internal/database"
+	"github.com/DevanshBhavsar3/tareas/internal/handler"
 	"github.com/DevanshBhavsar3/tareas/internal/logger"
+	"github.com/DevanshBhavsar3/tareas/internal/repository"
+	"github.com/DevanshBhavsar3/tareas/internal/router"
 	"github.com/DevanshBhavsar3/tareas/internal/server"
+	"github.com/DevanshBhavsar3/tareas/internal/service"
 )
+
+const ShutDownTimeout = 30
 
 func main() {
 	cfg := config.Load()
@@ -30,9 +40,37 @@ func main() {
 		log.Fatal().Err(err).Msg("failed to initialize server")
 	}
 
-	_ = srv
+	repos := repository.NewRepositories(srv)
 
-	log.Info().Msg("Works fine")
+	services := service.NewServices(srv, repos)
 
-	fmt.Println("Hello, World!")
+	handlers := handler.NewHandlers(srv, services)
+
+	// Initialize router
+	r := router.NewRouter(srv, handlers)
+
+	// Setup HTTP server
+	srv.SetupHTTPServer(r)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+
+	// Start server
+	go func() {
+		if err = srv.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatal().Err(err).Msg("failed to start server")
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server
+	<-ctx.Done()
+
+	ctx, cancel := context.WithTimeout(context.Background(), ShutDownTimeout*time.Second)
+
+	if err = srv.Shutdown(ctx); err != nil {
+		log.Fatal().Err(err).Msg("server forced to shutdown")
+	}
+	stop()
+	cancel()
+
+	log.Info().Msg("server exited properly")
 }

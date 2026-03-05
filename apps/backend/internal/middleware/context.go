@@ -67,19 +67,32 @@ func (ce *ContextEnhancer) EnhanceContext() echo.MiddlewareFunc {
 }
 
 func GetUserID(c echo.Context) string {
-	return c.Get(UserIDKey).(string)
+	if userID := c.Get(UserIDKey); userID != nil {
+		return userID.(string)
+	}
+
+	return ""
 }
 
 func GetUserRole(c echo.Context) string {
-	return c.Get(UserRoleKey).(string)
+	if userRole := c.Get(UserRoleKey); userRole != nil {
+		return userRole.(string)
+	}
+
+	return ""
 }
 
 func GetLogger(c echo.Context) *zerolog.Logger {
-	if logger, ok := c.Get(LoggerKey).(*zerolog.Logger); ok {
-		return logger
+	noOpLogger := zerolog.Nop()
+
+	if logger := c.Get(LoggerKey); logger != nil {
+		if log, ok := logger.(*zerolog.Logger); ok {
+			return log
+		}
+
+		return &noOpLogger
 	}
 
 	// Fallback to a basic logger if not found
-	logger := zerolog.Nop()
-	return &logger
+	return &noOpLogger
 }
