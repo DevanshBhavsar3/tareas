@@ -1,0 +1,17 @@
+{
+  "name": "@tareas/zod",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
+}
