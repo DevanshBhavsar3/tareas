@@ -11,8 +11,14 @@ import (
 	"github.com/DevanshBhavsar3/tareas/internal/errs"
 )
 
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
+}
+
 type Validatable interface {
-	Validate() error
+	Validate(*validator.Validate) error
 }
 
 type CustomValidationError struct {
@@ -32,7 +38,7 @@ func BindAndValidate(c echo.Context, payload Validatable) error {
 		return errs.NewBadRequestError(message, false, nil, nil, nil)
 	}
 
-	if err := payload.Validate(); err != nil {
+	if err := payload.Validate(validate); err != nil {
 		if msg, fieldErrors := extractValidationErrors(err); fieldErrors != nil {
 			return errs.NewBadRequestError(msg, true, nil, fieldErrors, nil)
 		}
