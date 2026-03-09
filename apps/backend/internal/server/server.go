@@ -11,6 +11,7 @@ import (
 	"github.com/DevanshBhavsar3/tareas/internal/database"
 	"github.com/DevanshBhavsar3/tareas/internal/lib/job"
 	loggerConfig "github.com/DevanshBhavsar3/tareas/internal/logger"
+	"github.com/go-playground/validator/v10"
 	"github.com/newrelic/go-agent/v3/integrations/nrredis-v9"
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
@@ -24,6 +25,7 @@ type Server struct {
 	Redis         *redis.Client
 	httpServer    *http.Server
 	Job           *job.JobService
+	Validator     *validator.Validate
 }
 
 func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerConfig.LoggerService) (*Server, error) {
@@ -59,6 +61,8 @@ func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerConfig
 		return nil, err
 	}
 
+	validate := validator.New()
+
 	server := &Server{
 		Config:        cfg,
 		Logger:        logger,
@@ -66,6 +70,7 @@ func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerConfig
 		DB:            db,
 		Redis:         redisClient,
 		Job:           jobService,
+		Validator:     validate,
 	}
 
 	return server, nil

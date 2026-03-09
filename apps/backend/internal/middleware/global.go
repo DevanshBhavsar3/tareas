@@ -36,7 +36,6 @@ func (global *GlobalMiddlewares) RequestLogger() echo.MiddlewareFunc {
 		LogLatency: true,
 		LogHost:    true,
 		LogMethod:  true,
-		LogURIPath: true,
 		LogValuesFunc: func(c echo.Context, v echoMiddleware.RequestLoggerValues) error {
 			statusCode := v.Status
 

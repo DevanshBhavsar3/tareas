@@ -16,20 +16,20 @@ func NewRouter(s *server.Server, h *handler.Handlers) *echo.Echo {
 
 	// global middlewares
 	router.Use(
-		middlewares.RateLimit.RateLimiter(),
-		middlewares.Global.CORS(),
-		middlewares.Global.Secure(),
+		middlewares.Global.Recover(),
 		middlewares.RequestId.RequestID(),
-		middlewares.Tracing.NewRelicMiddleware(),
-		middlewares.Tracing.EnhanceTracing(),
+		middlewares.Global.Secure(),
+		middlewares.Global.CORS(),
+		middlewares.RateLimit.RateLimiter(),
+		middlewares.Observability.NewRelicMiddleware(),
 		middlewares.ContextEnhancer.EnhanceContext(),
 		middlewares.Global.RequestLogger(),
-		middlewares.Global.Recover(),
+		middlewares.Observability.RequestObservability(),
 	)
 
 	// register system routes
 	router.GET("/status", h.Health.CheckHealth)
-	router.GET("/docs", h.OpenAPI.ServeOpenAPIUI)
+	router.GET("/docs", handler.ServeOpenAPIUI)
 
 	router.Static("/static", "static")
 

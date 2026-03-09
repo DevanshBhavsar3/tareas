@@ -2,24 +2,12 @@ package handler
 
 import (
 	"fmt"
+	"github.com/labstack/echo/v4"
 	"net/http"
 	"os"
-
-	"github.com/DevanshBhavsar3/tareas/internal/server"
-	"github.com/labstack/echo/v4"
 )
 
-type OpenAPIHandler struct {
-	Handler
-}
-
-func NewOpenAPIHandler(s *server.Server) *OpenAPIHandler {
-	return &OpenAPIHandler{
-		Handler: NewHandler(s),
-	}
-}
-
-func (h *OpenAPIHandler) ServeOpenAPIUI(c echo.Context) error {
+func ServeOpenAPIUI(c echo.Context) error {
 	templateBytes, err := os.ReadFile("static/openapi.html")
 	if err != nil {
 		return fmt.Errorf("failed to read OpenAPI UI template: %w", err)

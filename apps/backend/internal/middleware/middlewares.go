@@ -8,7 +8,7 @@ type Middlewares struct {
 	Global          *GlobalMiddlewares
 	Auth            *AuthMiddleware
 	ContextEnhancer *ContextEnhancer
-	Tracing         *TracingMiddleware
+	Observability   *ObservabilityMiddleware
 	RateLimit       *RateLimitMiddleware
 	RequestId       *RequestIDMiddleware
 }
@@ -18,7 +18,7 @@ func NewMiddlewares(s *server.Server) *Middlewares {
 		Global:          NewGlobalMiddlewares(s),
 		Auth:            NewAuthMiddleware(s),
 		ContextEnhancer: NewContextEnhancer(s),
-		Tracing:         NewTracingMiddleware(s, s.LoggerService.NewRelicApp),
+		Observability:   NewObservabilityMiddleware(s.LoggerService.NewRelicApp),
 		RateLimit:       NewRateLimitMiddleware(s),
 		RequestId:       NewRequestIDMiddleware(),
 	}

@@ -149,12 +149,6 @@ func extractColumnForUniqueViolation(constraintName string) string {
 
 // HandleError processes a database error into an appropriate application error
 func HandleError(err error) error {
-	// If it's already a custom HTTP error, just return it
-	var httpErr *errs.HTTPError
-	if errors.As(err, &httpErr) {
-		return err
-	}
-
 	// Handle pgx specific errors
 	var pgerr *pgconn.PgError
 	if errors.As(err, &pgerr) {
@@ -200,8 +194,7 @@ func HandleError(err error) error {
 		if strings.Contains(errMsg, tablePrefix) {
 			table := strings.Split(strings.Split(errMsg, tablePrefix)[1], ":")[0]
 			entityName := getEntityName(table, "")
-			return errs.NewNotFoundError(fmt.Sprintf("%s not found",
-				entityName), true, nil)
+			return errs.NewNotFoundError(fmt.Sprintf("%s not found", entityName), true, nil)
 		}
 		return errs.NewNotFoundError("Resource not found", false, nil)
 	}
