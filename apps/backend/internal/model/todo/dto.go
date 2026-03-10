@@ -8,6 +8,8 @@ import (
 )
 
 //============================================================================
+// Request DTOs
+//============================================================================
 
 type CreateTodoPayload struct {
 	Title        string     `json:"title" validate:"required,min=1,max=255"`
@@ -20,7 +22,16 @@ type CreateTodoPayload struct {
 }
 
 func (p *CreateTodoPayload) Validate(validate *validator.Validate) error {
-	return validate.Struct(p)
+	if err := validate.Struct(p); err != nil {
+		return err
+	}
+
+	if p.Priority == nil {
+		defaultPriority := PriorityLow
+		p.Priority = &defaultPriority
+	}
+
+	return nil
 }
 
 //============================================================================
@@ -43,7 +54,7 @@ func (p *UpdateTodoPayload) Validate(validate *validator.Validate) error {
 
 //============================================================================
 
-type GetTodos struct {
+type GetTodosPayload struct {
 	Page         *int       `query:"page" validate:"omitempty,min=1"`
 	Limit        *int       `query:"limit" validate:"omitempty,min=1,max=100"`
 	Sort         *string    `query:"sort" validate:"omitempty,oneof=created_at updated_at title priority due_date status"`
@@ -59,7 +70,7 @@ type GetTodos struct {
 	Completed    *bool      `query:"completed"`
 }
 
-func (p *GetTodos) Validate(validate *validator.Validate) error {
+func (p *GetTodosPayload) Validate(validate *validator.Validate) error {
 	if err := validate.Struct(p); err != nil {
 		return err
 	}
@@ -108,9 +119,13 @@ func (p *DeleteTodoPayload) Validate(validate *validator.Validate) error {
 }
 
 //============================================================================
+// Response DTOs
+//============================================================================
 
-type GetTodoStatsPayload struct{}
-
-func (p *GetTodoStatsPayload) Validate(validate *validator.Validate) error {
-	return nil
+type PaginatedPopulatedTodoResponse struct {
+	Data       []PopulatedTodo `json:"data"`
+	Page       int             `json:"page"`
+	TotalPages int             `json:"totalPages"`
+	Limit      int             `json:"limit"`
+	Total      int             `json:"total"`
 }

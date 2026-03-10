@@ -13,21 +13,21 @@ import (
 )
 
 type Config struct {
-	Primary       `koanf:"primary" validate:"required"`
-	Server        `koanf:"server" validate:"required"`
-	Database      `koanf:"database" validate:"required"`
-	Auth          `koanf:"auth" validate:"required"`
-	Redis         `koanf:"redis" validate:"required"`
-	Integration   `koanf:"integration" validate:"required"`
-	AWS           `koanf:"aws" validate:"required"`
-	Observability `koanf:"observability" validate:"required"`
+	Primary       PrimaryConfig       `koanf:"primary" validate:"required"`
+	Server        ServerConfig        `koanf:"server" validate:"required"`
+	Database      DatabaseConfig      `koanf:"database" validate:"required"`
+	Auth          AuthConfig          `koanf:"auth" validate:"required"`
+	Redis         RedisConfig         `koanf:"redis" validate:"required"`
+	Integration   IntegrationConfig   `koanf:"integration" validate:"required"`
+	AWS           AWSConfig           `koanf:"aws" validate:"required"`
+	Observability ObservabilityConfig `koanf:"observability" validate:"required"`
 }
 
-type Primary struct {
+type PrimaryConfig struct {
 	Env string `koanf:"env" validate:"required"`
 }
 
-type Server struct {
+type ServerConfig struct {
 	Port               string   `koanf:"port" validate:"required"`
 	ReadTimeout        int      `koanf:"read_timeout" validate:"required"`
 	WriteTimeout       int      `koanf:"write_timeout" validate:"required"`
@@ -35,7 +35,7 @@ type Server struct {
 	CORSAllowedOrigins []string `koanf:"cors_allowed_origins" validate:"required"`
 }
 
-type Database struct {
+type DatabaseConfig struct {
 	Host            string `koanf:"host" validate:"required"`
 	Port            int    `koanf:"port" validate:"required"`
 	User            string `koanf:"user" validate:"required"`
@@ -48,19 +48,19 @@ type Database struct {
 	ConnMaxIdleTime int    `koanf:"conn_max_idle_time" validate:"required"`
 }
 
-type Redis struct {
+type RedisConfig struct {
 	Address string `koanf:"address" validate:"required"`
 }
 
-type Integration struct {
+type IntegrationConfig struct {
 	ResendAPIKey string `koanf:"resend_api_key" validate:"required"`
 }
 
-type Auth struct {
+type AuthConfig struct {
 	SecretKey string `koanf:"secret_key" validate:"required"`
 }
 
-type AWS struct {
+type AWSConfig struct {
 	Region          string `koanf:"region" validate:"required"`
 	AccessKeyId     string `koanf:"access_key_id" validate:"required"`
 	SecretAccessKey string `koanf:"secret_access_key" validate:"required"`
@@ -68,19 +68,19 @@ type AWS struct {
 	EndpointUrl     string `koanf:"endpoint_url" validate:"required"`
 }
 
-type Observability struct {
-	ServiceName string   `koanf:"service_name" validate:"required"`
-	Environment string   `koanf:"environment" validate:"required"`
-	Logging     Logging  `koanf:"logging" validate:"required"`
-	NewRelic    NewRelic `koanf:"new_relic"`
+type ObservabilityConfig struct {
+	ServiceName string         `koanf:"service_name" validate:"required"`
+	Environment string         `koanf:"environment" validate:"required"`
+	Logging     LoggingConfig  `koanf:"logging" validate:"required"`
+	NewRelic    NewRelicConfig `koanf:"new_relic"`
 }
 
-type Logging struct {
+type LoggingConfig struct {
 	Level  string `koanf:"level" validate:"required,oneof=debug info warn error"`
 	Format string `koanf:"format" validate:"required"`
 }
 
-type NewRelic struct {
+type NewRelicConfig struct {
 	LicenseKey                string `koanf:"license_key"`
 	AppLogForwardingEnabled   bool   `koanf:"app_log_forwarding_enabled"`
 	DistributedTracingEnabled bool   `koanf:"distributed_tracing_enabled"`
