@@ -3,11 +3,12 @@ package router
 import (
 	"github.com/DevanshBhavsar3/tareas/internal/handler"
 	"github.com/DevanshBhavsar3/tareas/internal/middleware"
+	v1 "github.com/DevanshBhavsar3/tareas/internal/router/v1"
 	"github.com/DevanshBhavsar3/tareas/internal/server"
 	"github.com/labstack/echo/v4"
 )
 
-func NewRouter(s *server.Server, h *handler.Handlers) *echo.Echo {
+func NewRouter(s *server.Server, handlers *handler.Handlers) *echo.Echo {
 	middlewares := middleware.NewMiddlewares(s)
 
 	router := echo.New()
@@ -28,13 +29,13 @@ func NewRouter(s *server.Server, h *handler.Handlers) *echo.Echo {
 	)
 
 	// register system routes
-	router.GET("/status", h.Health.CheckHealth)
+	router.GET("/status", handlers.Health.CheckHealth)
 	router.GET("/docs", handler.ServeOpenAPIUI)
 
 	router.Static("/static", "static")
 
 	// register versioned routes
-	router.Group("/api/v1")
+	v1.RegisterV1Routes(router, middlewares, handlers)
 
 	return router
 }

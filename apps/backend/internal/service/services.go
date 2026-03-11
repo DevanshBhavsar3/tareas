@@ -7,13 +7,19 @@ import (
 )
 
 type Services struct {
-	Auth *AuthService
-	Job  *job.JobService
+	Todo     *TodoService
+	Comment  *CommentService
+	Category *CategoryService
+	Auth     *AuthService
+	Job      *job.JobService
 }
 
 func NewServices(s *server.Server, repos *repository.Repositories) *Services {
 	return &Services{
-		Auth: NewAuthService(s),
-		Job:  s.Job,
+		Todo:     NewTodoService(repos.Todo, repos.Category),
+		Comment:  NewCommentService(repos.Comment, repos.Todo),
+		Category: NewCategoryService(repos.Category),
+		Auth:     NewAuthService(s),
+		Job:      s.Job,
 	}
 }

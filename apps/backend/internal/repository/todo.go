@@ -153,7 +153,7 @@ func (r *TodoRepository) CheckTodoExists(ctx context.Context, userID string, tod
 	return &todoItem, nil
 }
 
-func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload todo.GetTodosPayload) (*todo.PaginatedPopulatedTodoResponse, error) {
+func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *todo.GetTodosPayload) (*todo.PaginatedPopulatedTodoResponse, error) {
 	query := `
 		SELECT (
 			t.*,
