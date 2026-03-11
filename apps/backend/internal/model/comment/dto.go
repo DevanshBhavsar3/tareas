@@ -6,6 +6,8 @@ import (
 )
 
 //============================================================================
+// Request DTOs
+//============================================================================
 
 type AddCommentPayload struct {
 	TodoID  uuid.UUID `param:"id" validate:"required,uuid"`
@@ -23,6 +25,16 @@ type GetCommentsByTodoIDPayload struct {
 }
 
 func (p *GetCommentsByTodoIDPayload) Validate(validate *validator.Validate) error {
+	return validate.Struct(p)
+}
+
+//============================================================================
+
+type GetCommentByIDPayload struct {
+	ID uuid.UUID `param:"id" validate:"required,uuid"`
+}
+
+func (p *GetCommentByIDPayload) Validate(validate *validator.Validate) error {
 	return validate.Struct(p)
 }
 

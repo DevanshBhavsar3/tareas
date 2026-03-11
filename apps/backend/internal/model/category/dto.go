@@ -6,6 +6,8 @@ import (
 )
 
 //============================================================================
+// Request DTOs
+//============================================================================
 
 type CreateCategoryPayload struct {
 	Name        string  `json:"name" validate:"required,min=1,max=100"`
@@ -18,6 +20,16 @@ func (p *CreateCategoryPayload) Validate(validate *validator.Validate) error {
 }
 
 //============================================================================
+
+type GetCategoryByIDPayload struct {
+	ID uuid.UUID `param:"id" validate:"required,uuid"`
+}
+
+func (p *GetCategoryByIDPayload) Validate(validate *validator.Validate) error {
+	return validate.Struct(p)
+}
+
+// ============================================================================
 
 type UpdateCategoryPayload struct {
 	ID          uuid.UUID `param:"id" validate:"required,uuid"`
@@ -77,4 +89,16 @@ type DeleteCategoryPayload struct {
 
 func (p *DeleteCategoryPayload) Validate(validate *validator.Validate) error {
 	return validate.Struct(p)
+}
+
+//============================================================================
+// Response DTOs
+//============================================================================
+
+type PaginatedCategoryResponse struct {
+	Data       []Category `json:"data"`
+	Page       int        `json:"page"`
+	TotalPages int        `json:"totalPages"`
+	Limit      int        `json:"limit"`
+	Total      int        `json:"total"`
 }
