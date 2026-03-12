@@ -18,7 +18,7 @@ type LoggerService struct {
 	NewRelicApp *newrelic.Application
 }
 
-func NewLoggerService(cfg config.Observability) *LoggerService {
+func NewLoggerService(cfg config.ObservabilityConfig) *LoggerService {
 	service := &LoggerService{}
 
 	if cfg.NewRelic.LicenseKey == "" {
@@ -53,7 +53,7 @@ func (ls *LoggerService) Shutdown() {
 	}
 }
 
-func New(cfg config.Observability, loggerService *LoggerService) zerolog.Logger {
+func New(cfg config.ObservabilityConfig, loggerService *LoggerService) zerolog.Logger {
 	var logLevel zerolog.Level
 
 	switch cfg.Logging.Level {
