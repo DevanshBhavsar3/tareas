@@ -71,6 +71,7 @@ export default function ThemeToggle() {
 
   return (
     <Button
+      size="sm"
       variant="icon"
       type="button"
       onClick={toggleMode}

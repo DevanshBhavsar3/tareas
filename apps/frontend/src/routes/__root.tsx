@@ -6,7 +6,6 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import Footer from '../components/Footer'
-import Header from '../components/Header'
 
 import ClerkProvider from '../integrations/clerk/provider'
 
@@ -55,10 +54,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="font-sans antialiased [overflow-wrap:anywhere]">
+      <body className="font-sans antialiased wrap:anywhere]">
         <ClerkProvider>
           <TanStackQueryProvider>
-            <Header />
             {children}
             <Footer />
             <TanStackDevtools
