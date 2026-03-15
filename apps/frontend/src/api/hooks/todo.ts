@@ -1,0 +1,169 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEYS } from '../query-keys'
+import {
+  CreateTodoPayload,
+  GetTodosPayload,
+  PopulatedTodo,
+  Todo,
+  TodoStats,
+  UpdateTodoPayload,
+  type PaginatedResponse,
+} from '@tareas/zod'
+import z from 'zod'
+import { useApiClient } from '../'
+import { showApiErrorToast } from '../utils'
+
+type TGetTodosPayload = z.infer<typeof GetTodosPayload>
+type TGetTodosResponse = PaginatedResponse<z.infer<typeof PopulatedTodo>>
+
+type TGetTodoByIdResponse = z.infer<typeof PopulatedTodo>
+
+type TCreateTodoPayload = z.infer<typeof CreateTodoPayload>
+type TCreateTodoResponse = z.infer<typeof Todo>
+
+type TUpdateTodoPayload = z.infer<typeof UpdateTodoPayload>
+type TUpdateTodoResponse = z.infer<typeof Todo>
+
+type TTodoStatsResponse = z.infer<typeof TodoStats>
+
+export function useGetAllTodos({ query }: { query?: TGetTodosPayload }) {
+  const api = useApiClient()
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.TODOS.ALL_TODOS, query],
+    queryFn: async () => {
+      const res = await api.get('/todos', {
+        params: query,
+      })
+
+      return res.data as TGetTodosResponse
+    },
+    placeholderData: {
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      totalPages: 0,
+    },
+  })
+}
+
+export const useGetTodoById = ({
+  id,
+  enabled = true,
+}: {
+  id: string
+  enabled?: boolean
+}) => {
+  const api = useApiClient()
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.TODOS.GET_TODO_BY_ID, id],
+    queryFn: () => async () => {
+      const res = await api.get(`/todos/${id}`)
+
+      return res.data as TGetTodoByIdResponse
+    },
+    enabled: enabled && !!id,
+  })
+}
+
+export const useCreateTodo = () => {
+  const api = useApiClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ body }: { body: TCreateTodoPayload }) => {
+      const res = await api.post('/todos', body)
+
+      return res.data as TCreateTodoResponse
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.ALL_TODOS],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.TODO_STATS],
+      })
+    },
+    onError: (err: any) => {
+      showApiErrorToast(err, 'Failed to create todo')
+    },
+  })
+}
+
+export const useUpdateTodo = () => {
+  const api = useApiClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      todoId,
+      body,
+    }: {
+      todoId: string
+      body: TUpdateTodoPayload
+    }) => {
+      const res = await api.patch(`/todos/${todoId}`, body)
+
+      return res.data as TUpdateTodoResponse
+    },
+    onSuccess: (_: any, { todoId }: { todoId: string }) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.ALL_TODOS],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.GET_TODO_BY_ID, todoId],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.TODO_STATS],
+      })
+    },
+    onError: (err: any) => {
+      showApiErrorToast(err, 'Failed to update todo')
+    },
+  })
+}
+
+export const useDeleteTodo = () => {
+  const api = useApiClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ todoId }: { todoId: string }) => {
+      await api.delete(`/todos/${todoId}`)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.ALL_TODOS],
+      })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.TODO_STATS],
+      })
+    },
+    onError: (err: any) => {
+      showApiErrorToast(err, 'Failed to delete todo')
+    },
+  })
+}
+
+export const useGetTodoStats = () => {
+  const api = useApiClient()
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.TODOS.TODO_STATS],
+    queryFn: async () => {
+      const res = await api.post('/todos/stats')
+
+      return res.data as TTodoStatsResponse
+    },
+    placeholderData: {
+      total: 0,
+      draft: 0,
+      active: 0,
+      completed: 0,
+      archived: 0,
+      overdue: 0,
+    },
+  })
+}
