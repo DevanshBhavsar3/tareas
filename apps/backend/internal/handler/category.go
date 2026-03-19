@@ -52,6 +52,22 @@ func (h *CategoryHandler) GetCategories(c echo.Context) error {
 	return c.JSON(http.StatusOK, result)
 }
 
+func (h *CategoryHandler) GetCategoryById(c echo.Context) error {
+	payload := &category.GetCategoryByIDPayload{}
+	if err := validator.BindAndValidate(c, payload); err != nil {
+		return err
+	}
+
+	userID := middleware.GetUserID(c)
+
+	result, err := h.categoryService.GetCategoryByID(c, userID, payload)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
 func (h *CategoryHandler) UpdateCategory(c echo.Context) error {
 	payload := &category.UpdateCategoryPayload{}
 	if err := validator.BindAndValidate(c, payload); err != nil {

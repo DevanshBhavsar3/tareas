@@ -7,11 +7,12 @@ import (
 )
 
 func registerCategoryRoutes(r *echo.Group, m *middleware.Middlewares, h *handler.Handlers) {
-	categories := r.Group("/category", m.Auth.RequireAuth)
+	categories := r.Group("/categories", m.Auth.RequireAuth)
 
-	categories.POST("/", h.Category.CreateCategory)
-	categories.GET("/", h.Category.GetCategories)
+	categories.POST("", h.Category.CreateCategory)
+	categories.GET("", h.Category.GetCategories)
 
-	categories.PATCH("/:id", h.Category.UpdateCategory)
-	categories.DELETE("/:id", h.Category.DeleteCategory)
+	categories.GET(":id", h.Category.GetCategoryById)
+	categories.PATCH(":id", h.Category.UpdateCategory)
+	categories.DELETE(":id", h.Category.DeleteCategory)
 }

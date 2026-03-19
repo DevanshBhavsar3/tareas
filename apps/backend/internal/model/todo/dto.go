@@ -82,7 +82,7 @@ func (p *GetTodosPayload) Validate(validate *validator.Validate) error {
 
 	if p.Limit == nil {
 		defaultLimit := 20
-		p.Page = &defaultLimit
+		p.Limit = &defaultLimit
 	}
 
 	if p.Sort == nil {

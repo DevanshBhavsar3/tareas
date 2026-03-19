@@ -10,11 +10,11 @@ import {
   type PaginatedResponse,
 } from '@tareas/zod'
 import z from 'zod'
-import { useApiClient } from '../'
+import { useApiClient } from '../index'
 import { showApiErrorToast } from '../utils'
 
 type TGetTodosPayload = z.infer<typeof GetTodosPayload>
-type TGetTodosResponse = PaginatedResponse<z.infer<typeof PopulatedTodo>>
+type TGetTodosResponse = PaginatedResponse<typeof PopulatedTodo>
 
 type TGetTodoByIdResponse = z.infer<typeof PopulatedTodo>
 
@@ -101,7 +101,7 @@ export const useUpdateTodo = () => {
       todoId,
       body,
     }: {
-      todoId: string
+      todoId: any
       body: TUpdateTodoPayload
     }) => {
       const res = await api.patch(`/todos/${todoId}`, body)

@@ -44,28 +44,3 @@ export const TodoStats = z.object({
   archived: z.number(),
   overdue: z.number(),
 });
-
-export const getTodosPayload = z.object({
-  page: z.number().min(1).optional(),
-  limit: z.number().min(1).max(100).optional(),
-  sort: z
-    .enum([
-      "created_at",
-      "updated_at",
-      "title",
-      "priority",
-      "due_date",
-      "status",
-    ])
-    .optional(),
-  order: z.enum(["asc", "desc"]).optional(),
-  search: z.string().min(1).optional(),
-  status: TodoStatus.optional(),
-  priority: TodoPriority.optional(),
-  categoryId: z.uuid().optional(),
-  parentTodoId: z.uuid().optional(),
-  dueFrom: z.iso.datetime().optional(),
-  dueTo: z.iso.datetime().optional(),
-  overdue: z.boolean().optional(),
-  completed: z.boolean().optional(),
-});

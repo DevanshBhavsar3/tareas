@@ -1,0 +1,22 @@
+services:
+  redis:
+    container_name: tareas-redis
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - tareas-network
+
+  postgres:
+    container_name: tareas-db
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: tareas
+    networks:
+      - tareas-network
+
+networks:
+  tareas-network:

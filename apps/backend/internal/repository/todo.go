@@ -155,10 +155,10 @@ func (r *TodoRepository) CheckTodoExists(ctx context.Context, userID string, tod
 
 func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *todo.GetTodosPayload) (*todo.PaginatedPopulatedTodoResponse, error) {
 	query := `
-		SELECT (
+		SELECT
 			t.*,
 			CASE
-				WHEN category.id IS NOT NULL
+				WHEN c.id IS NOT NULL
 					THEN to_jsonb(camel(c))
 				ELSE NULL	
 			END as category,
@@ -176,20 +176,19 @@ func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *t
 			) as children,
 			COALESCE (
 				jsonb_agg(
-					to_jsonb(camel(comment))
+					to_jsonb(camel(tcomment))
 					ORDER BY
-						comment.created_at ASC
+						tcomment.created_at ASC
 				) FILTER (
 					WHERE
-						comment.id IS NOT NULL
+						tcomment.id IS NOT NULL
 				),
 				'[]'::JSONB
-			) as comments,
-		) 
+			) as comments
 		FROM todos t
-			LEFT JOIN todo_categories category ON category.id = t.category_id AND category.user_id=@user_id
+			LEFT JOIN todo_categories c ON c.id = t.category_id AND c.user_id=@user_id
 			LEFT JOIN todos child ON child.parent_todo_id = t.id AND child.user_id=@user_id
-			LEFT JOIN todo_comments comment ON comment.todo_id = t.id AND comment.user_id=@user_id
+			LEFT JOIN todo_comments tcomment ON tcomment.todo_id = t.id AND tcomment.user_id=@user_id
 	`
 
 	args := pgx.NamedArgs{
