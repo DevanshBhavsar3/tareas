@@ -19,27 +19,73 @@
 }
 
 :root {
-  --bg-primary: white;
-  --bg-secondary: black;
-  --bg-tertiary: #f1f5f9;
-  --text-primary: black;
-  --text-secondary: white;
-  --text-tertiary: #94a3b8;
-  --border-color: oklch(0.92 0 0);
-  --border-secondary: oklch(0.27 0 0);
-  --border-color-hover: #cbd5e1;
+  --bg-primary: #ffffff;
+  --bg-secondary: #09090b;
+  --bg-tertiary: #f4f4f5;
+  --bg-hover: #f4f4f5;
+  --bg-muted: #fafafa;
+
+  --text-primary: #09090b;
+  --text-secondary: #fafafa;
+  --text-muted: #71717a;
+  --text-tertiary: #a1a1aa;
+
+  --border-color: #e4e4e7;
+  --border-secondary: #27272a;
+  --border-color-hover: #d4d4d8;
+
+  --success: #22c55e;
+  --success-muted: #dcfce7;
+  --warning: #f59e0b;
+  --warning-muted: #fef3c7;
+  --danger: #ef4444;
+  --danger-muted: #fee2e2;
+  --info: #3b82f6;
+  --info-muted: #dbeafe;
+
+  --priority-low: #22c55e;
+  --priority-medium: #f59e0b;
+  --priority-high: #ef4444;
+
+  --status-draft: #71717a;
+  --status-active: #3b82f6;
+  --status-completed: #22c55e;
+  --status-archived: #a1a1aa;
 }
 
 :root.dark {
-  --bg-primary: black;
-  --bg-secondary: white;
+  --bg-primary: #09090b;
+  --bg-secondary: #fafafa;
   --bg-tertiary: #18181b;
-  --text-primary: white;
-  --text-secondary: black;
-  --text-tertiary: #64748b;
-  --border-color: oklch(0.37 0 0);
-  --border-secondary: oklch(0.92 0 0);
+  --bg-hover: #27272a;
+  --bg-muted: #18181b;
+
+  --text-primary: #fafafa;
+  --text-secondary: #09090b;
+  --text-muted: #a1a1aa;
+  --text-tertiary: #71717a;
+
+  --border-color: #27272a;
+  --border-secondary: #e4e4e7;
   --border-color-hover: #3f3f46;
+
+  --success: #22c55e;
+  --success-muted: #14532d;
+  --warning: #f59e0b;
+  --warning-muted: #78350f;
+  --danger: #ef4444;
+  --danger-muted: #7f1d1d;
+  --info: #3b82f6;
+  --info-muted: #1e3a8a;
+
+  --priority-low: #22c55e;
+  --priority-medium: #f59e0b;
+  --priority-high: #ef4444;
+
+  --status-draft: #a1a1aa;
+  --status-active: #3b82f6;
+  --status-completed: #22c55e;
+  --status-archived: #71717a;
 }
 
 * {
@@ -62,4 +108,38 @@ html {
 /* Custom selection color with accent */
 ::selection {
   background-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Modal animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-in {
+  animation-duration: 200ms;
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fadeIn;
+}
+
+.zoom-in-95 {
+  animation-name: zoomIn;
 }

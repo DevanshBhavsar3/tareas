@@ -89,9 +89,9 @@ func (r *CategoryRepository) GetCategories(ctx context.Context, userID string, p
 	`
 	args := pgx.NamedArgs{
 		"user_id": userID,
-		"sort":    payload.Sort,
-		"order":   payload.Order,
-		"limit":   payload.Limit,
+		"sort":    *payload.Sort,
+		"order":   *payload.Order,
+		"limit":   *payload.Limit,
 		"offset":  (*payload.Page - 1) * (*payload.Limit),
 	}
 
@@ -100,10 +100,10 @@ func (r *CategoryRepository) GetCategories(ctx context.Context, userID string, p
 		args["search"] = *payload.Search
 	}
 
-	query += `
-		ORDER BY @sort @order
+	query += fmt.Sprintf(`
+		ORDER BY %s %s
 		LIMIT @limit OFFSET @offset
-	`
+	`, *payload.Sort, *payload.Order)
 
 	rows, err := r.server.DB.Pool.Query(ctx, query, args)
 	if err != nil {
@@ -206,7 +206,7 @@ func (r *CategoryRepository) DeleteCategory(ctx context.Context, userID string, 
 	query := `
 		DELETE FROM todo_categories
 		WHERE
-			user_id = @user_id
+			user_id = @user_id AND
 			id = @id
 	`
 

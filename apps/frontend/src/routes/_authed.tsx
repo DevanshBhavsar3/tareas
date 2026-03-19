@@ -1,6 +1,6 @@
 import { useAuth } from '@clerk/clerk-react'
 import { createFileRoute, Navigate, Outlet } from '@tanstack/react-router'
-import { Loader, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/_authed')({
   component: AuthedLayout,

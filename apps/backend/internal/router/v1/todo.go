@@ -11,12 +11,12 @@ func registerTodoRoutes(r *echo.Group, m *middleware.Middlewares, h *handler.Han
 
 	todos.POST("", h.Todo.CreateTodo)
 	todos.GET("", h.Todo.GetTodos)
-	todos.GET("stats", h.Todo.GetTodoStats)
+	todos.GET("/stats", h.Todo.GetTodoStats)
 
-	todos.GET(":id", h.Todo.GetTodoByID)
-	todos.PATCH(":id", h.Todo.UpdateTodo)
-	todos.DELETE(":id", h.Todo.DeleteTodo)
+	todos.GET("/:id", h.Todo.GetTodoByID)
+	todos.PATCH("/:id", h.Todo.UpdateTodo)
+	todos.DELETE("/:id", h.Todo.DeleteTodo)
 
-	todos.POST(":id/comments", h.Comment.AddComment)
-	todos.GET(":id/comments", h.Comment.GetCommentsByTodoID)
+	todos.POST("/:id/comments", h.Comment.AddComment)
+	todos.GET("/:id/comments", h.Comment.GetCommentsByTodoID)
 }

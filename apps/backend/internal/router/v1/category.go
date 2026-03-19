@@ -12,7 +12,7 @@ func registerCategoryRoutes(r *echo.Group, m *middleware.Middlewares, h *handler
 	categories.POST("", h.Category.CreateCategory)
 	categories.GET("", h.Category.GetCategories)
 
-	categories.GET(":id", h.Category.GetCategoryById)
-	categories.PATCH(":id", h.Category.UpdateCategory)
-	categories.DELETE(":id", h.Category.DeleteCategory)
+	categories.GET("/:id", h.Category.GetCategoryById)
+	categories.PATCH("/:id", h.Category.UpdateCategory)
+	categories.DELETE("/:id", h.Category.DeleteCategory)
 }

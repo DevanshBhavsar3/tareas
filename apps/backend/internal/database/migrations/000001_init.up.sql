@@ -1,7 +1,7 @@
-CREATE OR REPLACE FUNCTION trigger_set_update_at()
+CREATE OR REPLACE FUNCTION trigger_set_updated_at()
     RETURNS TRIGGER AS $$
 BEGIN
-    New.update_at = CURRENT_TIMESTAMP;
+    New.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

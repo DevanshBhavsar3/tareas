@@ -153,7 +153,7 @@ export const useGetTodoStats = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.TODOS.TODO_STATS],
     queryFn: async () => {
-      const res = await api.post('/todos/stats')
+      const res = await api.get('/todos/stats')
 
       return res.data as TTodoStatsResponse
     },

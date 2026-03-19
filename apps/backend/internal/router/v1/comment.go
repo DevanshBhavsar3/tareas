@@ -9,6 +9,6 @@ import (
 func registerCommentRoutes(r *echo.Group, m *middleware.Middlewares, h *handler.Handlers) {
 	comments := r.Group("/comments", m.Auth.RequireAuth)
 
-	comments.PATCH(":id", h.Comment.UpdateComment)
-	comments.DELETE(":id", h.Comment.DeleteComment)
+	comments.PATCH("/:id", h.Comment.UpdateComment)
+	comments.DELETE("/:id", h.Comment.DeleteComment)
 }

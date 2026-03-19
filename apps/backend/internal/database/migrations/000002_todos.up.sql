@@ -14,7 +14,7 @@ CREATE UNIQUE INDEX todo_categories_unique_name ON todo_categories(user_id, name
 CREATE TRIGGER set_updated_at_todo_categories
     BEFORE UPDATE ON todo_categories
     FOR EACH ROW
-    EXECUTE FUNCTION trigger_set_update_at();
+    EXECUTE FUNCTION trigger_set_updated_at();
 
 CREATE TABLE todos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -43,7 +43,7 @@ CREATE INDEX idx_todos_due_date ON todos(due_date);
 CREATE TRIGGER set_updated_at_todos
     BEFORE UPDATE ON todos
     FOR EACH ROW
-    EXECUTE FUNCTION trigger_set_update_at();
+    EXECUTE FUNCTION trigger_set_updated_at();
 
 CREATE TABLE todo_comments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -60,7 +60,7 @@ CREATE INDEX idx_todo_comments_user_id ON todo_comments(user_id);
 CREATE TRIGGER set_updated_at_todo_comments
     BEFORE UPDATE ON todo_comments
     FOR EACH ROW
-    EXECUTE FUNCTION trigger_set_update_at();
+    EXECUTE FUNCTION trigger_set_updated_at();
 
 ALTER TABLE todos
 ADD CONSTRAINT no_self_parent

@@ -9,7 +9,6 @@ import {
   Smartphone,
   Clock,
   Users,
-  Loader,
 } from 'lucide-react'
 
 export const Route = createFileRoute('/')({ component: LandingPage })
