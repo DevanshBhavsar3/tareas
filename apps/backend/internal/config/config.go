@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/go-playground/validator/v10"
@@ -99,6 +100,8 @@ func Load() *Config {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("could not load initial env variables")
 	}
+
+	fmt.Println(k.All())
 
 	cfg := &Config{}
 
