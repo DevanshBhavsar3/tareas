@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "bun run build --filter=frontend",
+  "outputDirectory": "apps/frontend/.output",
+  "installCommand": "bun install"
+}
