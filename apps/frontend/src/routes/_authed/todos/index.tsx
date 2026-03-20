@@ -1,5 +1,10 @@
 import Button from '#/components/Button'
-import { EmptyState, Spinner } from '#/components/ui'
+import {
+  EmptyState,
+  Spinner,
+  ContextMenu,
+  useContextMenu,
+} from '#/components/ui'
 import {
   TodoItem,
   TodoForm,
@@ -14,11 +19,16 @@ import {
   useUpdateTodo,
   useDeleteTodo,
   useGetTodoStats,
+  type TCreateTodoPayload,
+  type TUpdateTodoPayload,
 } from '#/api/hooks/todo'
 import {
   useGetAllCategories,
   useCreateCategory,
+  useUpdateCategory,
   useDeleteCategory,
+  type TCreateCategoryPayload,
+  type TUpdateCategoryPayload,
 } from '#/api/hooks/category'
 import { createFileRoute } from '@tanstack/react-router'
 import {
@@ -30,14 +40,12 @@ import {
   FolderPlus,
   Inbox,
   Trash2,
+  Pencil,
+  type LucideIcon,
 } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { useUser } from '@clerk/clerk-react'
-import type {
-  PopulatedTodo,
-  CreateTodoPayload,
-  UpdateTodoPayload,
-} from '@tareas/zod'
+import type { PopulatedTodo, TodoCategory } from '@tareas/zod'
 import type z from 'zod'
 import { toast } from 'sonner'
 
@@ -46,8 +54,7 @@ export const Route = createFileRoute('/_authed/todos/')({
 })
 
 type Todo = z.infer<typeof PopulatedTodo>
-type CreatePayload = z.infer<typeof CreateTodoPayload>
-type UpdatePayload = z.infer<typeof UpdateTodoPayload>
+type Category = z.infer<typeof TodoCategory>
 
 type Filters = {
   status?: string
@@ -64,7 +71,11 @@ function Dashboard() {
   const [showTodoForm, setShowTodoForm] = useState(false)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
+
+  // Context menu for categories
+  const categoryMenu = useContextMenu()
 
   // API hooks
   const { data: todosData, isLoading: todosLoading } = useGetAllTodos({
@@ -83,14 +94,13 @@ function Dashboard() {
   const updateTodo = useUpdateTodo()
   const deleteTodo = useDeleteTodo()
   const createCategory = useCreateCategory()
+  const updateCategory = useUpdateCategory()
   const deleteCategory = useDeleteCategory()
 
   const todos = (todosData?.data ?? []) as unknown as Todo[]
-  const categories = (categoriesData?.data ?? []) as unknown as Array<{
-    id: string
-    name: string
-    color: string
-  }>
+  const categories = (categoriesData?.data ?? []) as unknown as Array<
+    z.infer<typeof TodoCategory>
+  >
 
   // Get greeting based on time
   const greeting = useMemo(() => {
@@ -101,9 +111,9 @@ function Dashboard() {
   }, [])
 
   // Handlers
-  const handleCreateTodo = (data: CreatePayload | UpdatePayload) => {
+  const handleCreateTodo = (data: TCreateTodoPayload) => {
     createTodo.mutate(
-      { body: data as CreatePayload },
+      { body: data },
       {
         onSuccess: () => {
           setShowTodoForm(false)
@@ -113,10 +123,10 @@ function Dashboard() {
     )
   }
 
-  const handleUpdateTodo = (data: CreatePayload | UpdatePayload) => {
+  const handleUpdateTodo = (data: TUpdateTodoPayload) => {
     if (!editingTodo) return
     updateTodo.mutate(
-      { todoId: editingTodo.id, body: data as UpdatePayload },
+      { todoId: editingTodo.id, body: data },
       {
         onSuccess: () => {
           setEditingTodo(null)
@@ -142,7 +152,7 @@ function Dashboard() {
     )
   }
 
-  const handleCreateCategory = (data: any) => {
+  const handleCreateCategory = (data: TCreateCategoryPayload) => {
     createCategory.mutate(
       { body: data },
       {
@@ -154,7 +164,23 @@ function Dashboard() {
     )
   }
 
+  const handleUpdateCategory = (data: TUpdateCategoryPayload) => {
+    if (!editingCategory) return
+    updateCategory.mutate(
+      { categoryId: editingCategory.id, body: data },
+      {
+        onSuccess: () => {
+          setEditingCategory(null)
+          toast.success('Category updated')
+        },
+      },
+    )
+  }
+
   const handleDeleteCategory = (categoryId: string) => {
+    if (!window.confirm('Are you sure you want to delete this category?')) {
+      return
+    }
     deleteCategory.mutate(
       { categoryId },
       {
@@ -164,6 +190,39 @@ function Dashboard() {
   }
 
   const pendingCount = (stats?.active ?? 0) + (stats?.draft ?? 0)
+
+  // Quick filters configuration
+  const quickFilters: Array<{
+    label: string
+    icon: LucideIcon
+    filter: Filters
+    isActive: () => boolean
+  }> = [
+    {
+      label: 'All Tasks',
+      icon: Inbox,
+      filter: {},
+      isActive: () => !filters.status && !filters.priority,
+    },
+    {
+      label: 'Active',
+      icon: Clock,
+      filter: { status: 'active' },
+      isActive: () => filters.status === 'active',
+    },
+    {
+      label: 'Completed',
+      icon: CheckCircle2,
+      filter: { status: 'completed' },
+      isActive: () => filters.status === 'completed',
+    },
+    {
+      label: 'High Priority',
+      icon: AlertTriangle,
+      filter: { priority: 'high' },
+      isActive: () => filters.priority === 'high',
+    },
+  ]
 
   return (
     <div className="min-h-screen bg-(--bg-primary)">
@@ -307,28 +366,49 @@ function Dashboard() {
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {categories.map((cat) => (
-                    <div key={cat.id} className="group relative">
-                      <CategoryBadge
-                        name={cat.name}
-                        color={cat.color}
-                        onClick={() =>
-                          setFilters((f) =>
-                            f.categoryId === cat.id
-                              ? { ...f, categoryId: undefined }
-                              : { ...f, categoryId: cat.id },
-                          )
-                        }
-                      />
-                      <button
-                        onClick={() => handleDeleteCategory(cat.id)}
-                        className="absolute -right-1 -top-1 size-4 rounded-full bg-(--danger) text-white opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center"
-                      >
-                        <Trash2 size={10} />
-                      </button>
-                    </div>
+                    <CategoryBadge
+                      key={cat.id}
+                      name={cat.name}
+                      color={cat.color}
+                      onClick={() =>
+                        setFilters((f) =>
+                          f.categoryId === cat.id
+                            ? { ...f, categoryId: undefined }
+                            : { ...f, categoryId: cat.id },
+                        )
+                      }
+                      onContextMenu={(e) => categoryMenu.open(e, cat)}
+                    />
                   ))}
                 </div>
               )}
+
+              {/* Category context menu */}
+              <ContextMenu
+                position={categoryMenu.position}
+                onClose={categoryMenu.close}
+                items={[
+                  {
+                    label: 'Edit',
+                    icon: Pencil,
+                    onClick: () => {
+                      if (categoryMenu.data) {
+                        setEditingCategory(categoryMenu.data as Category)
+                      }
+                    },
+                  },
+                  {
+                    label: 'Delete',
+                    icon: Trash2,
+                    variant: 'danger',
+                    onClick: () => {
+                      if (categoryMenu.data) {
+                        handleDeleteCategory((categoryMenu.data as Category).id)
+                      }
+                    },
+                  },
+                ]}
+              />
             </div>
 
             {/* Quick filters */}
@@ -337,50 +417,24 @@ function Dashboard() {
                 Quick Filters
               </h3>
               <div className="space-y-1">
-                <button
-                  onClick={() => setFilters({})}
-                  className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    !filters.status
-                      ? 'bg-(--bg-tertiary) text-(--text-primary)'
-                      : 'text-(--text-muted) hover:bg-(--bg-hover)'
-                  }`}
-                >
-                  <Inbox size={16} />
-                  All Tasks
-                </button>
-                <button
-                  onClick={() => setFilters({ status: 'active' })}
-                  className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    filters.status === 'active'
-                      ? 'bg-(--bg-tertiary) text-(--text-primary)'
-                      : 'text-(--text-muted) hover:bg-(--bg-hover)'
-                  }`}
-                >
-                  <Clock size={16} />
-                  Active
-                </button>
-                <button
-                  onClick={() => setFilters({ status: 'completed' })}
-                  className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    filters.status === 'completed'
-                      ? 'bg-(--bg-tertiary) text-(--text-primary)'
-                      : 'text-(--text-muted) hover:bg-(--bg-hover)'
-                  }`}
-                >
-                  <CheckCircle2 size={16} />
-                  Completed
-                </button>
-                <button
-                  onClick={() => setFilters({ priority: 'high' })}
-                  className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                    filters.priority === 'high'
-                      ? 'bg-(--bg-tertiary) text-(--text-primary)'
-                      : 'text-(--text-muted) hover:bg-(--bg-hover)'
-                  }`}
-                >
-                  <AlertTriangle size={16} />
-                  High Priority
-                </button>
+                {quickFilters.map((qf) => {
+                  const Icon = qf.icon
+                  const active = qf.isActive()
+                  return (
+                    <button
+                      key={qf.label}
+                      onClick={() => setFilters(qf.filter)}
+                      className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
+                        active
+                          ? 'bg-(--bg-tertiary) text-(--text-primary)'
+                          : 'text-(--text-muted) hover:bg-(--bg-hover)'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      {qf.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -414,6 +468,14 @@ function Dashboard() {
         onClose={() => setShowCategoryForm(false)}
         onSubmit={handleCreateCategory}
         isLoading={createCategory.isPending}
+      />
+
+      <CategoryForm
+        isOpen={!!editingCategory}
+        onClose={() => setEditingCategory(null)}
+        onSubmit={handleUpdateCategory}
+        category={editingCategory}
+        isLoading={updateCategory.isPending}
       />
     </div>
   )

@@ -15,7 +15,7 @@ type TodoFiltersProps = {
 }
 
 const statusOptions = [
-  { value: '', label: 'All Status' },
+  { value: '', label: 'Status' },
   { value: 'draft', label: 'Draft' },
   { value: 'active', label: 'Active' },
   { value: 'completed', label: 'Completed' },
@@ -23,7 +23,7 @@ const statusOptions = [
 ]
 
 const priorityOptions = [
-  { value: '', label: 'All Priorities' },
+  { value: '', label: 'Priority' },
   { value: 'low', label: 'Low' },
   { value: 'medium', label: 'Medium' },
   { value: 'high', label: 'High' },
@@ -40,7 +40,7 @@ export default function TodoFilters({
   }>
 
   const categoryOptions = [
-    { value: '', label: 'All Categories' },
+    { value: '', label: 'Category' },
     ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
   ]
 
@@ -52,9 +52,9 @@ export default function TodoFilters({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-col flex-wrap items-center gap-3">
       {/* Search */}
-      <div className="relative flex-1 min-w-[200px]">
+      <div className="relative flex-1 w-full">
         <Search
           size={16}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-muted)"
@@ -70,19 +70,20 @@ export default function TodoFilters({
         />
       </div>
 
-      {/* Status Filter */}
-      <div className="w-36">
+      <div className="grid grid-cols-4 gap-3 w-full">
+        {/* Status Filter */}
         <Select
           options={statusOptions}
           value={filters.status ?? ''}
           onChange={(e) =>
-            onFiltersChange({ ...filters, status: e.target.value || undefined })
+            onFiltersChange({
+              ...filters,
+              status: e.target.value || undefined,
+            })
           }
         />
-      </div>
 
-      {/* Priority Filter */}
-      <div className="w-36">
+        {/* Priority Filter */}
         <Select
           options={priorityOptions}
           value={filters.priority ?? ''}
@@ -93,10 +94,8 @@ export default function TodoFilters({
             })
           }
         />
-      </div>
 
-      {/* Category Filter */}
-      <div className="w-40">
+        {/* Category Filter */}
         <Select
           options={categoryOptions}
           value={filters.categoryId ?? ''}
@@ -107,18 +106,18 @@ export default function TodoFilters({
             })
           }
         />
-      </div>
 
-      {/* Clear Filters */}
-      {hasActiveFilters && (
-        <button
-          onClick={clearFilters}
-          className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
-        >
-          <X size={14} />
-          Clear
-        </button>
-      )}
+        {/* Clear Filters */}
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="flex items-center gap-1.5 rounded-lg justify-center px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
+          >
+            <X size={14} />
+            Clear
+          </button>
+        )}
+      </div>
     </div>
   )
 }

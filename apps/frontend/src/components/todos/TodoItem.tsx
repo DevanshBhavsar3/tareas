@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   Trash2,
   Pencil,
+  Tag,
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import type z from 'zod'
@@ -114,28 +115,35 @@ export default function TodoItem({
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <p
-          className={`text-sm leading-relaxed ${isCompleted ? 'text-(--text-muted) line-through' : 'text-(--text-primary)'}`}
-        >
-          {todo.title}
-        </p>
+        <div className="flex gap-3">
+          <p
+            className={`text-sm leading-relaxed ${isCompleted ? 'text-(--text-muted) line-through' : 'text-(--text-primary)'}`}
+          >
+            {todo.title}
+          </p>
 
-        {/* Meta info */}
-        <div className="mt-1.5 flex flex-wrap items-center gap-2">
           {/* Category */}
           {todo.category && (
             <span
-              className="inline-flex items-center gap-1 text-xs"
-              style={{ color: todo.category.color }}
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium"
+              style={{
+                backgroundColor: `${todo.category.color}15`,
+                color: todo.category.color,
+              }}
             >
-              <span
-                className="size-2 rounded-full"
-                style={{ backgroundColor: todo.category.color }}
-              />
+              <Tag size={10} />
               {todo.category.name}
             </span>
           )}
 
+          {/* Priority */}
+          <Badge variant={priorityVariants[todo.priority]}>
+            {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+          </Badge>
+        </div>
+
+        {/* Meta info */}
+        <div className="mt-1.5 flex flex-wrap items-center gap-2">
           {/* Due date */}
           {dueDateText && (
             <span
@@ -145,11 +153,6 @@ export default function TodoItem({
               {dueDateText}
             </span>
           )}
-
-          {/* Priority */}
-          <Badge variant={priorityVariants[todo.priority]}>
-            {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
-          </Badge>
 
           {/* Comments count */}
           {todo.comments && todo.comments.length > 0 && (

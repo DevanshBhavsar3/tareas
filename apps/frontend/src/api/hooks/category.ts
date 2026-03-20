@@ -16,10 +16,10 @@ type TGetAllCategoriesResponse = PaginatedResponse<typeof TodoCategory>
 
 type TGetCategoryByIdResponse = z.infer<typeof TodoCategory>
 
-type TCreateCategoryPayload = z.infer<typeof CreateCategoryPayload>
+export type TCreateCategoryPayload = z.infer<typeof CreateCategoryPayload>
 type TCreateCategoryResponse = z.infer<typeof TodoCategory>
 
-type TUpdateCategoryPayload = z.infer<typeof UpdateCategoryPayload>
+export type TUpdateCategoryPayload = z.infer<typeof UpdateCategoryPayload>
 type TUpdateCategoryResponse = z.infer<typeof TodoCategory>
 
 export function useGetAllCategories({

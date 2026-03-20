@@ -13,13 +13,23 @@ type Todo = z.infer<typeof PopulatedTodo>
 type CreatePayload = z.infer<typeof CreateTodoPayload>
 type UpdatePayload = z.infer<typeof UpdateTodoPayload>
 
-type TodoFormProps = {
+type TodoFormBaseProps = {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: CreatePayload | UpdatePayload) => void
-  todo?: Todo | null
   isLoading?: boolean
 }
+
+type CreateTodoFormProps = TodoFormBaseProps & {
+  todo?: null
+  onSubmit: (data: CreatePayload) => void
+}
+
+type EditTodoFormProps = TodoFormBaseProps & {
+  todo: Todo
+  onSubmit: (data: UpdatePayload) => void
+}
+
+type TodoFormProps = CreateTodoFormProps | EditTodoFormProps
 
 const priorityOptions = [
   { value: 'low', label: 'Low' },
@@ -82,16 +92,26 @@ export default function TodoForm({
 
     if (!title.trim()) return
 
-    const data = {
-      title: title.trim(),
-      description: description.trim() || null,
-      priority,
-      dueDate: dueDate ? new Date(dueDate).toISOString() : null,
-      categoryId: categoryId || null,
-      ...(isEditing && { status }),
+    if (isEditing) {
+      const data: UpdatePayload = {
+        title: title.trim(),
+        description: description.trim() || null,
+        priority,
+        status,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        categoryId: categoryId || null,
+      }
+      onSubmit(data)
+    } else {
+      const data: CreatePayload = {
+        title: title.trim(),
+        description: description.trim() || null,
+        priority,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        categoryId: categoryId || null,
+      }
+      onSubmit(data)
     }
-
-    onSubmit(data)
   }
 
   const categoryOptions = [

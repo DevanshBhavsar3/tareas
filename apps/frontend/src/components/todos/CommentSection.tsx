@@ -2,11 +2,12 @@ import {
   useGetCommentsByTodoId,
   useAddComment,
   useDeleteComment,
+  useUpdateComment,
 } from '#/api/hooks/comment'
 import { Textarea } from '#/components/ui'
 import Button from '#/components/Button'
 import { Spinner } from '#/components/ui'
-import { Send, Trash2 } from 'lucide-react'
+import { Send, Trash2, Pencil, X, Check } from 'lucide-react'
 import { useState } from 'react'
 
 type CommentSectionProps = {
@@ -36,8 +37,11 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
   const { data: comments, isLoading } = useGetCommentsByTodoId({ todoId })
   const addComment = useAddComment()
   const deleteComment = useDeleteComment()
+  const updateComment = useUpdateComment()
 
   const [newComment, setNewComment] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
 
   const handleAddComment = () => {
     if (!newComment.trim()) return
@@ -57,6 +61,43 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleAddComment()
+    }
+  }
+
+  const handleStartEdit = (commentId: string, content: string) => {
+    setEditingId(commentId)
+    setEditContent(content)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingId(null)
+    setEditContent('')
+  }
+
+  const handleSaveEdit = () => {
+    if (!editingId || !editContent.trim()) return
+
+    updateComment.mutate(
+      {
+        commentId: editingId,
+        body: { content: editContent.trim() },
+      },
+      {
+        onSuccess: () => {
+          setEditingId(null)
+          setEditContent('')
+        },
+      },
+    )
+  }
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSaveEdit()
+    }
+    if (e.key === 'Escape') {
+      handleCancelEdit()
     }
   }
 
@@ -86,7 +127,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
             disabled={!newComment.trim() || addComment.isPending}
           >
             {addComment.isPending ? <Spinner size={14} /> : <Send size={14} />}
-            Send
+            Add
           </Button>
         </div>
       </div>
@@ -99,22 +140,71 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
               key={comment.id}
               className="group rounded-lg border border-(--border-color) bg-(--bg-muted) p-3"
             >
-              <div className="flex items-start justify-between gap-2">
-                <p className="text-sm text-(--text-primary) whitespace-pre-wrap">
-                  {comment.content}
-                </p>
-                <button
-                  onClick={() =>
-                    deleteComment.mutate({ commentId: comment.id })
-                  }
-                  className="shrink-0 rounded p-1 text-(--text-muted) opacity-0 transition-all hover:bg-(--bg-hover) hover:text-(--danger) group-hover:opacity-100"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-              <p className="mt-2 text-xs text-(--text-muted)">
-                {formatDate(comment.createdAt)}
-              </p>
+              {editingId === comment.id ? (
+                /* Edit mode */
+                <div className="space-y-2">
+                  <Textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    onKeyDown={handleEditKeyDown}
+                    rows={2}
+                    autoFocus
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={handleCancelEdit}
+                    >
+                      <X size={14} />
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveEdit}
+                      disabled={!editContent.trim() || updateComment.isPending}
+                    >
+                      {updateComment.isPending ? (
+                        <Spinner size={14} />
+                      ) : (
+                        <Check size={14} />
+                      )}
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* View mode */
+                <>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm text-(--text-primary) whitespace-pre-wrap">
+                      {comment.content}
+                    </p>
+                    <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        onClick={() =>
+                          handleStartEdit(comment.id, comment.content)
+                        }
+                        className="rounded p-1 text-(--text-muted) transition-all hover:bg-(--bg-hover) hover:text-(--text-primary)"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() =>
+                          deleteComment.mutate({ commentId: comment.id })
+                        }
+                        className="rounded p-1 text-(--text-muted) transition-all hover:bg-(--bg-hover) hover:text-(--danger)"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-(--text-muted)">
+                    {formatDate(comment.createdAt)}
+                    {comment.updatedAt !== comment.createdAt && ' (edited)'}
+                  </p>
+                </>
+              )}
             </div>
           ))
         ) : (

@@ -12,13 +12,23 @@ type Category = z.infer<typeof TodoCategory>
 type CreatePayload = z.infer<typeof CreateCategoryPayload>
 type UpdatePayload = z.infer<typeof UpdateCategoryPayload>
 
-type CategoryFormProps = {
+type CategoryFormBaseProps = {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (data: CreatePayload | UpdatePayload) => void
-  category?: Category | null
   isLoading?: boolean
 }
+
+type CreateCategoryFormProps = CategoryFormBaseProps & {
+  category?: null
+  onSubmit: (data: CreatePayload) => void
+}
+
+type EditCategoryFormProps = CategoryFormBaseProps & {
+  category: Category
+  onSubmit: (data: UpdatePayload) => void
+}
+
+type CategoryFormProps = CreateCategoryFormProps | EditCategoryFormProps
 
 const colorOptions = [
   '#ef4444', // red
@@ -75,7 +85,12 @@ export default function CategoryForm({
       description: description.trim() || null,
     }
 
-    onSubmit(data)
+    // Type narrowing based on whether we're editing
+    if (isEditing) {
+      onSubmit(data as UpdatePayload)
+    } else {
+      onSubmit(data as CreatePayload)
+    }
   }
 
   return (

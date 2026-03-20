@@ -18,10 +18,10 @@ type TGetTodosResponse = PaginatedResponse<typeof PopulatedTodo>
 
 type TGetTodoByIdResponse = z.infer<typeof PopulatedTodo>
 
-type TCreateTodoPayload = z.infer<typeof CreateTodoPayload>
+export type TCreateTodoPayload = z.infer<typeof CreateTodoPayload>
 type TCreateTodoResponse = z.infer<typeof Todo>
 
-type TUpdateTodoPayload = z.infer<typeof UpdateTodoPayload>
+export type TUpdateTodoPayload = z.infer<typeof UpdateTodoPayload>
 type TUpdateTodoResponse = z.infer<typeof Todo>
 
 type TTodoStatsResponse = z.infer<typeof TodoStats>
