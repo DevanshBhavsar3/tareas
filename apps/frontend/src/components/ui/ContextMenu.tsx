@@ -68,7 +68,7 @@ export default function ContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 min-w-[140px] rounded-lg border border-(--border-color) bg-(--bg-secondary) py-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
+      className="fixed z-50 min-w-[140px] rounded-lg border border-(--border-color) bg-(--bg-primary) py-1 shadow-lg animate-in fade-in zoom-in-95 duration-100"
       style={{
         left: adjustedPosition.x,
         top: adjustedPosition.y,

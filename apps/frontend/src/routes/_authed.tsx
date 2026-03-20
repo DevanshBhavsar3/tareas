@@ -1,6 +1,5 @@
 import { useAuth } from '@clerk/clerk-react'
 import { createFileRoute, Navigate, Outlet } from '@tanstack/react-router'
-import { Loader2 } from 'lucide-react'
 
 export const Route = createFileRoute('/_authed')({
   component: AuthedLayout,
@@ -9,20 +8,12 @@ export const Route = createFileRoute('/_authed')({
 function AuthedLayout() {
   const { isLoaded, isSignedIn } = useAuth()
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex gap-3 justify-center items-center">
-          <Loader2 size={14} className="animate-spin" />
-          <span className="text-sm">Loading</span>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isSignedIn) {
+  // Only redirect when we know for sure user is not signed in
+  if (isLoaded && !isSignedIn) {
     return <Navigate to="/" replace />
   }
 
+  // Render the page immediately - child components handle their own loading states
+  // This prevents the entire page from being blocked by auth loading
   return <Outlet />
 }

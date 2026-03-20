@@ -111,6 +111,9 @@ export function useUpdateCategory() {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.CATEGORIES.GET_CATEGORY_BY_ID, categoryId],
       })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.TODOS.ALL_TODOS],
+      })
     },
     onError: (err) => {
       showApiErrorToast(err, 'Failed to update category')

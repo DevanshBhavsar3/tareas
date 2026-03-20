@@ -48,6 +48,7 @@ import { useUser } from '@clerk/clerk-react'
 import type { PopulatedTodo, TodoCategory } from '@tareas/zod'
 import type z from 'zod'
 import { toast } from 'sonner'
+import { useDebounce } from '#/api/utils'
 
 export const Route = createFileRoute('/_authed/todos/')({
   component: Dashboard,
@@ -77,13 +78,15 @@ function Dashboard() {
   // Context menu for categories
   const categoryMenu = useContextMenu()
 
+  const debouncedSearch = useDebounce(filters.search, 300)
+
   // API hooks
   const { data: todosData, isLoading: todosLoading } = useGetAllTodos({
     query: {
       status: filters.status as any,
       priority: filters.priority as any,
       categoryId: filters.categoryId,
-      search: filters.search,
+      search: debouncedSearch,
       limit: 50,
     },
   })
