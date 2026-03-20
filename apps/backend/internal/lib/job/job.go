@@ -13,14 +13,16 @@ type JobService struct {
 }
 
 func NewJobService(logger *zerolog.Logger, cfg *config.Config) *JobService {
-	redisAddr := cfg.Redis.Address
-
 	client := asynq.NewClient(asynq.RedisClientOpt{
-		Addr: redisAddr,
+		Addr:     cfg.Redis.Address,
+		Password: cfg.Redis.Password,
 	})
 
 	server := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: redisAddr},
+		asynq.RedisClientOpt{
+			Addr:     cfg.Redis.Address,
+			Password: cfg.Redis.Password,
+		},
 		asynq.Config{
 			Concurrency: 10,
 			Queues: map[string]int{
