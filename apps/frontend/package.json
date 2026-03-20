@@ -29,6 +29,7 @@
     "@tareas/zod": "workspace:*",
     "axios": "^1.13.6",
     "lucide-react": "^0.545.0",
+    "nitro": "^3.0.260311-beta",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "sonner": "^2.0.7",

@@ -75,7 +75,7 @@ function LandingPage() {
 
           {/* Headline */}
           <h1 className="max-w-xl text-balance text-4xl font-semibold leading-tight tracking-tight text-(--text-primary) md:text-5xl">
-            The minimal todo apps for{' '}
+            The minimal todo app for{' '}
             <span className="bg-linear-to-r from-accent-500 to-accent-600 bg-clip-text text-transparent">
               focused work
             </span>
@@ -121,18 +121,13 @@ function LandingPage() {
       </section>
 
       {/* App Preview */}
-      <section className="relative px-6 pb-24">
-        <div className="mx-auto max-w-4xl">
-          <div className="overflow-hidden rounded-xl border border-(--border-color) shadow-2xl shadow-black/5">
-            {/* Window chrome */}
-            <div className="flex rounded-t-xl items-center gap-2 border-b border-(--border-color) bg-(--bg-tertiary) px-2 py-1.5">
-              <div className="h-3 w-3 rounded-full bg-red-400" />
-              <div className="h-3 w-3 rounded-full bg-yellow-400" />
-              <div className="h-3 w-3 rounded-full bg-green-400" />
-            </div>
-            <div className="h-52"></div>
-          </div>
-        </div>
+      <section className="px-6 overflow-hidden flex justify-center">
+        <img
+          src="/demo.png"
+          alt="Website Demo"
+          loading="lazy"
+          className="w-[85%] h-auto object-contain"
+        />
       </section>
 
       {/* Features Section */}
