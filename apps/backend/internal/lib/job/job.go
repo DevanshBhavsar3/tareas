@@ -1,6 +1,8 @@
 package job
 
 import (
+	"crypto/tls"
+
 	"github.com/DevanshBhavsar3/tareas/internal/config"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog"
@@ -13,18 +15,19 @@ type JobService struct {
 }
 
 func NewJobService(logger *zerolog.Logger, cfg *config.Config) *JobService {
-	client := asynq.NewClient(asynq.RedisClientOpt{
+	redisClientOpt := &asynq.RedisClientOpt{
 		Addr:     cfg.Redis.Address,
 		Password: cfg.Redis.Password,
 		DB:       0,
-	})
+	}
+	if cfg.Redis.TLSEnabled {
+		redisClientOpt.TLSConfig = &tls.Config{}
+	}
+
+	client := asynq.NewClient(redisClientOpt)
 
 	server := asynq.NewServer(
-		asynq.RedisClientOpt{
-			Addr:     cfg.Redis.Address,
-			Password: cfg.Redis.Password,
-			DB:       0,
-		},
+		redisClientOpt,
 		asynq.Config{
 			Concurrency: 10,
 			Queues: map[string]int{

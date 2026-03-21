@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/go-playground/validator/v10"
@@ -50,8 +49,9 @@ type DatabaseConfig struct {
 }
 
 type RedisConfig struct {
-	Address  string `koanf:"address" validate:"required"`
-	Password string `koanf:"password" validate:"required"`
+	Address    string `koanf:"address" validate:"required"`
+	Password   string `koanf:"password" validate:"required"`
+	TLSEnabled bool   `koanf:"tls_enabled"`
 }
 
 type IntegrationConfig struct {
@@ -100,8 +100,6 @@ func Load() *Config {
 	if err != nil {
 		logger.Fatal().Err(err).Msg("could not load initial env variables")
 	}
-
-	fmt.Println(k.All())
 
 	cfg := &Config{}
 

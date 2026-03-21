@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -33,9 +34,15 @@ func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerConfig
 	}
 
 	// Redis client with New Relic integration
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: cfg.Redis.Address,
-	})
+	redisOptions := &redis.Options{
+		Addr:     cfg.Redis.Address,
+		Password: cfg.Redis.Password,
+	}
+	if cfg.Redis.TLSEnabled {
+		redisOptions.TLSConfig = &tls.Config{}
+	}
+
+	redisClient := redis.NewClient(redisOptions)
 
 	// Add New Relic Redis hooks if available
 	if loggerService != nil && loggerService.NewRelicApp != nil {
