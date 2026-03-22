@@ -30,10 +30,23 @@ export const Todo = z.object({
   updatedAt: z.string(),
 });
 
+export const TodoAttachment = z.object({
+  id: z.uuid(),
+  todoId: z.uuid(),
+  name: z.string(),
+  uploadedBy: z.string(),
+  downloadKey: z.string(),
+  fileSize: z.int64().nullable(),
+  mimeType: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
 export const PopulatedTodo = Todo.extend({
   category: TodoCategory.nullable(),
   children: z.array(Todo),
   comments: z.array(TodoComment),
+  attachments: z.array(TodoAttachment),
 });
 
 export const TodoStats = z.object({

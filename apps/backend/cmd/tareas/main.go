@@ -42,7 +42,10 @@ func main() {
 
 	repos := repository.NewRepositories(srv)
 
-	services := service.NewServices(srv, repos)
+	services, err := service.NewServices(srv, repos)
+	if err != nil {
+		log.Fatal().Err(err).Msg("could to create services")
+	}
 
 	handlers := handler.NewHandlers(srv, services)
 

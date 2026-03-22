@@ -1,23 +1,32 @@
 package service
 
 import (
+	"net/http"
+
 	"github.com/DevanshBhavsar3/tareas/internal/errs"
+	"github.com/DevanshBhavsar3/tareas/internal/lib/aws"
 	"github.com/DevanshBhavsar3/tareas/internal/middleware"
 	"github.com/DevanshBhavsar3/tareas/internal/model/category"
 	"github.com/DevanshBhavsar3/tareas/internal/model/todo"
 	"github.com/DevanshBhavsar3/tareas/internal/repository"
+	"github.com/DevanshBhavsar3/tareas/internal/server"
 	"github.com/labstack/echo/v4"
+	"github.com/pkg/errors"
 )
 
 type TodoService struct {
+	server       *server.Server
 	todoRepo     *repository.TodoRepository
 	categoryRepo *repository.CategoryRepository
+	awsClient    *aws.AWS
 }
 
-func NewTodoService(todoRepo *repository.TodoRepository, categoryRepo *repository.CategoryRepository) *TodoService {
+func NewTodoService(server *server.Server, todoRepo *repository.TodoRepository, categoryRepo *repository.CategoryRepository, awsClient *aws.AWS) *TodoService {
 	return &TodoService{
+		server:       server,
 		todoRepo:     todoRepo,
 		categoryRepo: categoryRepo,
+		awsClient:    awsClient,
 	}
 }
 
@@ -183,4 +192,145 @@ func (s *TodoService) GetTodoStats(ctx echo.Context, userID string) (*todo.TodoS
 	}
 
 	return stats, nil
+}
+
+func (s *TodoService) UploadTodoAttachment(ctx echo.Context, userID string, payload *todo.UploadTodoAttachmentPayload) (*todo.TodoAttachment, error) {
+	logger := middleware.GetLogger(ctx)
+
+	_, err := s.todoRepo.CheckTodoExists(ctx.Request().Context(), userID, payload.TodoID)
+	if err != nil {
+		logger.Error().Err(err).Msg("todo validation failed")
+		return nil, err
+	}
+
+	src, err := payload.File.Open()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to open uploaded file")
+		return nil, errs.NewBadRequestError("failed to open uploaded file", false, nil, nil, nil)
+	}
+	defer src.Close()
+
+	s3Key, err := s.awsClient.S3.UploadFile(
+		ctx.Request().Context(),
+		s.server.Config.AWS.UploadBucket,
+		"todos/attachments/"+payload.File.Filename,
+		src,
+	)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to upload file to S3")
+		return nil, errors.Wrap(err, "failed to upload file")
+	}
+
+	src, err = payload.File.Open()
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to reopen file for MIME detection")
+		return nil, errs.NewBadRequestError("failed to process file", false, nil, nil, nil)
+	}
+	defer src.Close()
+
+	buffer := make([]byte, 512)
+	_, err = src.Read(buffer)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to read file for MIME detection")
+		return nil, errs.NewBadRequestError("failed to process file", false, nil, nil, nil)
+	}
+
+	mimeType := http.DetectContentType(buffer)
+
+	attachment, err := s.todoRepo.UploadTodoAttachment(
+		ctx.Request().Context(),
+		payload.TodoID,
+		payload.File.Filename,
+		userID,
+		s3Key,
+		payload.File.Size,
+		mimeType,
+	)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to create attachment record")
+		return nil, err
+	}
+
+	logger.Info().
+		Str("attachment_id", attachment.ID.String()).
+		Str("s3_key", s3Key).
+		Msg("uploaded todo attachment")
+
+	return attachment, nil
+}
+
+func (s *TodoService) DeleteTodoAttachment(ctx echo.Context, userID string, payload *todo.DeleteTodoAttachmentPayload) error {
+	logger := middleware.GetLogger(ctx)
+
+	_, err := s.todoRepo.CheckTodoExists(ctx.Request().Context(), userID, payload.TodoID)
+	if err != nil {
+		logger.Error().Err(err).Msg("todo validation failed")
+		return err
+	}
+
+	attachment, err := s.todoRepo.GetTodoAttachment(
+		ctx.Request().Context(),
+		payload.TodoID,
+		payload.AttachmentId,
+	)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to get attachment details")
+		return err
+	}
+
+	err = s.todoRepo.DeleteTodoAttachment(ctx.Request().Context(), payload)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to delete attachment record")
+		return err
+	}
+
+	go func() {
+		err := s.awsClient.S3.DeleteObject(
+			ctx.Request().Context(),
+			s.server.Config.AWS.UploadBucket,
+			attachment.DownloadKey,
+		)
+		if err != nil {
+			s.server.Logger.Error().
+				Err(err).
+				Str("s3_key", attachment.DownloadKey).
+				Msg("failed to delete attachment from S3")
+		}
+	}()
+
+	logger.Info().Msg("deleted todo attachment")
+
+	return nil
+}
+
+func (s *TodoService) GetTodoAttachmentURL(ctx echo.Context, userID string, payload *todo.GetAttachmentURLPayload) (string, error) {
+	logger := middleware.GetLogger(ctx)
+
+	_, err := s.todoRepo.CheckTodoExists(ctx.Request().Context(), userID, payload.TodoID)
+	if err != nil {
+		logger.Error().Err(err).Msg("todo validation failed")
+		return "", err
+	}
+
+	attachment, err := s.todoRepo.GetTodoAttachment(
+		ctx.Request().Context(),
+		payload.TodoID,
+		payload.AttachmentId,
+	)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to get attachment details")
+		return "", err
+	}
+
+	url, err := s.awsClient.S3.CreatePresignedURL(
+		ctx.Request().Context(),
+		s.server.Config.AWS.UploadBucket,
+		attachment.DownloadKey,
+	)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to generate presigned URL")
+		return "", err
+	}
+
+	return url, nil
 }

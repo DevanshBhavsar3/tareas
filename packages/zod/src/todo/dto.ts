@@ -50,3 +50,7 @@ export const UpdateTodoPayload = Todo.pick({
   categoryId: true,
   metadata: true,
 }).partial();
+
+export const GetTodoAttachmentURLResponse = z.object({
+  url: z.string(),
+});

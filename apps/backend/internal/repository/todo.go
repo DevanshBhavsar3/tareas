@@ -71,10 +71,10 @@ func (r *TodoRepository) CreateTodo(ctx context.Context, userID string, payload 
 
 func (r *TodoRepository) GetTodoByID(ctx context.Context, userID string, payload *todo.GetTodoByIDPayload) (*todo.PopulatedTodo, error) {
 	query := `
-		SELECT (
+		SELECT
 			t.*,
 			CASE
-				WHEN category.id IS NOT NULL
+				WHEN c.id IS NOT NULL
 					THEN to_jsonb(camel(c))
 				ELSE NULL	
 			END as category,
@@ -92,25 +92,36 @@ func (r *TodoRepository) GetTodoByID(ctx context.Context, userID string, payload
 			) as children,
 			COALESCE (
 				jsonb_agg(
-					to_jsonb(camel(comment))
+					to_jsonb(camel(tcomment))
 					ORDER BY
-						comment.created_at ASC
+						tcomment.created_at ASC
 				) FILTER (
 					WHERE
-						comment.id IS NOT NULL
+						tcomment.id IS NOT NULL
 				),
 				'[]'::JSONB
 			) as comments,
-		) 
+			COALESCE (
+				jsonb_agg(
+					to_jsonb(camel(tattachment))
+					ORDER BY
+						tattachment.created_at ASC
+				) FILTER (
+					WHERE
+						tattachment.id IS NOT NULL
+				),
+				'[]'::JSONB
+			) as attachments
 		FROM todos t
-			LEFT JOIN todo_categories category ON category.id = t.category_id AND category.user_id=@user_id
+			LEFT JOIN todo_categories c ON c.id = t.category_id AND c.user_id=@user_id
 			LEFT JOIN todos child ON child.parent_todo_id = t.id AND child.user_id=@user_id
-			LEFT JOIN todo_comments comment ON comment.todo_id = t.id AND comment.user_id=@user_id
+			LEFT JOIN todo_comments tcomment ON tcomment.todo_id = t.id AND tcomment.user_id=@user_id
+			LEFT JOIN todo_attachments tattachment ON tattachment.todo_id = t.id
 		WHERE 
 			t.id = @id AND t.user_id = @user_id
 		GROUP BY
 			t.id,
-			category.id
+			c.id
 	`
 
 	rows, err := r.server.DB.Pool.Query(ctx, query, pgx.NamedArgs{
@@ -184,11 +195,23 @@ func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *t
 						tcomment.id IS NOT NULL
 				),
 				'[]'::JSONB
-			) as comments
+			) as comments,
+			COALESCE (
+				jsonb_agg(
+					to_jsonb(camel(tattachment))
+					ORDER BY
+						tattachment.created_at ASC
+				) FILTER (
+					WHERE
+						tattachment.id IS NOT NULL
+				),
+				'[]'::JSONB
+			) as attachments
 		FROM todos t
 			LEFT JOIN todo_categories c ON c.id = t.category_id AND c.user_id=@user_id
 			LEFT JOIN todos child ON child.parent_todo_id = t.id AND child.user_id=@user_id
 			LEFT JOIN todo_comments tcomment ON tcomment.todo_id = t.id AND tcomment.user_id=@user_id
+			LEFT JOIN todo_attachments tattachment ON tattachment.todo_id = t.id
 	`
 
 	args := pgx.NamedArgs{
@@ -451,4 +474,142 @@ func (r *TodoRepository) GetTodoStats(ctx context.Context, userID string) (*todo
 	}
 
 	return &stats, nil
+}
+
+func (r *TodoRepository) UploadTodoAttachment(
+	ctx context.Context,
+	todoID uuid.UUID,
+	fileName string,
+	userID string,
+	s3Key string,
+	fileSize int64,
+	mimeType string,
+) (*todo.TodoAttachment, error) {
+	query := `
+		INSERT INTO
+			todo_attachments (
+				todo_id,
+				name,
+				uploaded_by,
+				download_key,
+				file_size,
+				mime_type
+			)
+		VALUES
+			(
+				@todo_id,
+				@name,
+				@uploaded_by,
+				@download_key,
+				@file_size,
+				@mime_type
+			)
+		RETURNING *
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, query, pgx.NamedArgs{
+		"todo_id":      todoID,
+		"name":         fileName,
+		"uploaded_by":  userID,
+		"download_key": s3Key,
+		"file_size":    fileSize,
+		"mime_type":    mimeType,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to create todo attachment for todo_id=%s: %w", todoID.String(), err)
+	}
+
+	attachment, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[todo.TodoAttachment])
+	if err != nil {
+		return nil, fmt.Errorf("failed to collect row from table:todo_attachments: %w", err)
+	}
+
+	return &attachment, nil
+}
+
+func (r *TodoRepository) GetTodoAttachment(ctx context.Context, todoID uuid.UUID, attachmentID uuid.UUID) (*todo.TodoAttachment, error) {
+	query := `
+		SELECT
+			*
+		FROM
+			todo_attachments
+		WHERE
+			id = @id AND
+			todo_id = @todo_id
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, query, pgx.NamedArgs{
+		"id":      attachmentID,
+		"todo_id": todoID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get todo attachment: %w", err)
+	}
+
+	attachment, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[todo.TodoAttachment])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			code := "ATTACHMENT_NOT_FOUND"
+			return nil, errs.NewNotFoundError("attachment not found", false, &code)
+		}
+
+		return nil, fmt.Errorf("failed to collect row from table:todo_attachments: %w", err)
+	}
+
+	return &attachment, nil
+}
+
+func (r *TodoRepository) GetTodoAttachments(ctx context.Context, todoID uuid.UUID) ([]todo.TodoAttachment, error) {
+	query := `
+		SELECT
+			*
+		FROM
+			todo_attachments
+		WHERE
+			todo_id = @todo_id
+		ORDER BY
+			created_at DESC
+	`
+
+	rows, err := r.server.DB.Pool.Query(ctx, query, pgx.NamedArgs{
+		"todo_id": todoID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get todo attachments: %w", err)
+	}
+
+	attachments, err := pgx.CollectRows(rows, pgx.RowToStructByName[todo.TodoAttachment])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return []todo.TodoAttachment{}, nil
+		}
+
+		return nil, fmt.Errorf("failed to collect rows from table:todo_attachments: %w", err)
+	}
+
+	return attachments, nil
+}
+
+func (r *TodoRepository) DeleteTodoAttachment(ctx context.Context, payload *todo.DeleteTodoAttachmentPayload) error {
+	query := `
+		DELETE FROM todo_attachments
+		WHERE
+			id = @id AND
+			todo_id = @todo_id
+	`
+
+	result, err := r.server.DB.Pool.Exec(ctx, query, pgx.NamedArgs{
+		"id":      payload.AttachmentId,
+		"todo_id": payload.TodoID,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to delete todo attachment: %w", err)
+	}
+
+	if result.RowsAffected() == 0 {
+		code := "ATTACHMENT_NOT_FOUND"
+		return errs.NewNotFoundError("attachment not found", false, &code)
+	}
+
+	return nil
 }

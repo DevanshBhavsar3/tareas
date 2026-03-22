@@ -13,10 +13,17 @@ func registerTodoRoutes(r *echo.Group, m *middleware.Middlewares, h *handler.Han
 	todos.GET("", h.Todo.GetTodos)
 	todos.GET("/stats", h.Todo.GetTodoStats)
 
-	todos.GET("/:id", h.Todo.GetTodoByID)
-	todos.PATCH("/:id", h.Todo.UpdateTodo)
-	todos.DELETE("/:id", h.Todo.DeleteTodo)
+	dynamicTodo := todos.Group("/:id")
+	dynamicTodo.GET("", h.Todo.GetTodoByID)
+	dynamicTodo.PATCH("", h.Todo.UpdateTodo)
+	dynamicTodo.DELETE("", h.Todo.DeleteTodo)
 
-	todos.POST("/:id/comments", h.Comment.AddComment)
-	todos.GET("/:id/comments", h.Comment.GetCommentsByTodoID)
+	todoComments := dynamicTodo.Group("/comments")
+	todoComments.POST("", h.Comment.AddComment)
+	todoComments.GET("", h.Comment.GetCommentsByTodoID)
+
+	todoAttachments := dynamicTodo.Group("/attachments")
+	todoAttachments.POST("", h.Todo.UploadTodoAttachment)
+	todoAttachments.GET("/:attachmentId/download", h.Todo.GetTodoAttachmentURL)
+	todoAttachments.DELETE("/:attachmentId", h.Todo.DeleteTodoAttachment)
 }

@@ -48,13 +48,13 @@ export function useGetAllTodos({ query }: { query?: TGetTodosPayload }) {
   })
 }
 
-export const useGetTodoById = ({
+export function useGetTodoById({
   id,
   enabled = true,
 }: {
   id: string
   enabled?: boolean
-}) => {
+}) {
   const api = useApiClient()
 
   return useQuery({
@@ -68,7 +68,7 @@ export const useGetTodoById = ({
   })
 }
 
-export const useCreateTodo = () => {
+export function useCreateTodo() {
   const api = useApiClient()
   const queryClient = useQueryClient()
 
@@ -92,7 +92,7 @@ export const useCreateTodo = () => {
   })
 }
 
-export const useUpdateTodo = () => {
+export function useUpdateTodo() {
   const api = useApiClient()
   const queryClient = useQueryClient()
 
@@ -125,7 +125,7 @@ export const useUpdateTodo = () => {
   })
 }
 
-export const useDeleteTodo = () => {
+export function useDeleteTodo() {
   const api = useApiClient()
   const queryClient = useQueryClient()
 
@@ -147,7 +147,7 @@ export const useDeleteTodo = () => {
   })
 }
 
-export const useGetTodoStats = () => {
+export function useGetTodoStats() {
   const api = useApiClient()
 
   return useQuery({

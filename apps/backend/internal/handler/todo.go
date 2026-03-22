@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/DevanshBhavsar3/tareas/internal/errs"
 	"github.com/DevanshBhavsar3/tareas/internal/middleware"
 	"github.com/DevanshBhavsar3/tareas/internal/model/todo"
 	"github.com/DevanshBhavsar3/tareas/internal/service"
@@ -104,6 +105,75 @@ func (h *TodoHandler) GetTodoStats(c echo.Context) error {
 	result, err := h.todoService.GetTodoStats(c, userID)
 	if err != nil {
 		return err
+	}
+
+	return c.JSON(http.StatusOK, result)
+}
+
+func (h *TodoHandler) UploadTodoAttachment(c echo.Context) error {
+	payload := &todo.UploadTodoAttachmentPayload{}
+	if err := BindAndValidate(c, payload); err != nil {
+		return err
+	}
+
+	userID := middleware.GetUserID(c)
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		return errs.NewBadRequestError("multipart form not found", false, nil, nil, nil)
+	}
+
+	files := form.File["file"]
+	if len(files) == 0 {
+		return errs.NewBadRequestError("no file found", false, nil, nil, nil)
+	}
+
+	if len(files) > 1 {
+		return errs.NewBadRequestError("only one file allowed per upload", false, nil, nil, nil)
+	}
+
+	payload.File = files[0]
+
+	result, err := h.todoService.UploadTodoAttachment(c, userID, payload)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusCreated, result)
+}
+
+func (h *TodoHandler) DeleteTodoAttachment(c echo.Context) error {
+	payload := &todo.DeleteTodoAttachmentPayload{}
+	if err := BindAndValidate(c, payload); err != nil {
+		return err
+	}
+
+	userID := middleware.GetUserID(c)
+
+	if err := h.todoService.DeleteTodoAttachment(c, userID, payload); err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (h *TodoHandler) GetTodoAttachmentURL(c echo.Context) error {
+	payload := &todo.GetAttachmentURLPayload{}
+	if err := BindAndValidate(c, payload); err != nil {
+		return err
+	}
+
+	userID := middleware.GetUserID(c)
+
+	url, err := h.todoService.GetTodoAttachmentURL(c, userID, payload)
+	if err != nil {
+		return err
+	}
+
+	result := &struct {
+		URL string `json:"url"`
+	}{
+		URL: url,
 	}
 
 	return c.JSON(http.StatusOK, result)

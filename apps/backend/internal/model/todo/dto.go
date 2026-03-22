@@ -1,6 +1,7 @@
 package todo
 
 import (
+	"mime/multipart"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -115,6 +116,39 @@ type DeleteTodoPayload struct {
 }
 
 func (p *DeleteTodoPayload) Validate(validate *validator.Validate) error {
+	return validate.Struct(p)
+}
+
+//============================================================================
+
+type UploadTodoAttachmentPayload struct {
+	TodoID uuid.UUID `param:"id" validate:"required,uuid"`
+	File   *multipart.FileHeader
+}
+
+func (p *UploadTodoAttachmentPayload) Validate(validate *validator.Validate) error {
+	return validate.Struct(p)
+}
+
+//============================================================================
+
+type DeleteTodoAttachmentPayload struct {
+	TodoID       uuid.UUID `param:"id" validate:"required,uuid"`
+	AttachmentId uuid.UUID `param:"attachmentId" validate:"required,uuid"`
+}
+
+func (p *DeleteTodoAttachmentPayload) Validate(validate *validator.Validate) error {
+	return validate.Struct(p)
+}
+
+//============================================================================
+
+type GetAttachmentURLPayload struct {
+	TodoID       uuid.UUID `param:"id" validate:"required,uuid"`
+	AttachmentId uuid.UUID `param:"attachmentId" validate:"required,uuid"`
+}
+
+func (p *GetAttachmentURLPayload) Validate(validate *validator.Validate) error {
 	return validate.Struct(p)
 }
 

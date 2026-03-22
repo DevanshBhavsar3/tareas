@@ -12,7 +12,8 @@ func registerCategoryRoutes(r *echo.Group, m *middleware.Middlewares, h *handler
 	categories.POST("", h.Category.CreateCategory)
 	categories.GET("", h.Category.GetCategories)
 
-	categories.GET("/:id", h.Category.GetCategoryById)
-	categories.PATCH("/:id", h.Category.UpdateCategory)
-	categories.DELETE("/:id", h.Category.DeleteCategory)
+	dynamicCategory := categories.Group("/:id")
+	dynamicCategory.GET("", h.Category.GetCategoryById)
+	dynamicCategory.PATCH("", h.Category.UpdateCategory)
+	dynamicCategory.DELETE("", h.Category.DeleteCategory)
 }

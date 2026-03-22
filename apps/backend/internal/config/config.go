@@ -50,7 +50,7 @@ type DatabaseConfig struct {
 
 type RedisConfig struct {
 	Address    string `koanf:"address" validate:"required"`
-	Password   string `koanf:"password" validate:"required"`
+	Password   string `koanf:"password"`
 	TLSEnabled bool   `koanf:"tls_enabled"`
 }
 
@@ -64,10 +64,10 @@ type AuthConfig struct {
 
 type AWSConfig struct {
 	Region          string `koanf:"region" validate:"required"`
-	AccessKeyId     string `koanf:"access_key_id" validate:"required"`
+	AccessKeyID     string `koanf:"access_key_id" validate:"required"`
 	SecretAccessKey string `koanf:"secret_access_key" validate:"required"`
 	UploadBucket    string `koanf:"upload_bucket" validate:"required"`
-	EndpointUrl     string `koanf:"endpoint_url" validate:"required"`
+	EndpointURL     string `koanf:"endpoint_url"`
 }
 
 type ObservabilityConfig struct {
