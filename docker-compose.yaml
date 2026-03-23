@@ -18,5 +18,15 @@ services:
     networks:
       - tareas-network
 
+  localstack:
+    container_name: tareas-localstack
+    image: localstack/localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+    volumes:
+      - ./localstack-setup.sh:/etc/localstack/init/ready.d/script.sh
+
 networks:
   tareas-network:
