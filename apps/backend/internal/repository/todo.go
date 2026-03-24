@@ -617,8 +617,7 @@ func (r *TodoRepository) DeleteTodoAttachment(ctx context.Context, payload *todo
 func (r *TodoRepository) GetTodosDueInHours(ctx context.Context, hours int, limit int) ([]todo.Todo, error) {
 	query := fmt.Sprintf(`
 		SELECT
-			t.*,
-			t.user_id,
+			t.*
 		FROM
 			todos t
 		WHERE

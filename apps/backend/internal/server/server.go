@@ -37,6 +37,7 @@ func New(cfg *config.Config, logger *zerolog.Logger, loggerService *loggerConfig
 	redisOptions := &redis.Options{
 		Addr:     cfg.Redis.Address,
 		Password: cfg.Redis.Password,
+		DB:       0,
 	}
 	if cfg.Redis.TLSEnabled {
 		redisOptions.TLSConfig = &tls.Config{}

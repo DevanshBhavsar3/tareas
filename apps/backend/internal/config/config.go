@@ -21,6 +21,7 @@ type Config struct {
 	Integration   IntegrationConfig   `koanf:"integration" validate:"required"`
 	AWS           AWSConfig           `koanf:"aws" validate:"required"`
 	Observability ObservabilityConfig `koanf:"observability" validate:"required"`
+	Cron          CronConfig          `koanf:"cron" validate:"required"`
 }
 
 type PrimaryConfig struct {
@@ -87,6 +88,13 @@ type NewRelicConfig struct {
 	AppLogForwardingEnabled   bool   `koanf:"app_log_forwarding_enabled"`
 	DistributedTracingEnabled bool   `koanf:"distributed_tracing_enabled"`
 	DebugLogging              bool   `koanf:"debug_logging"`
+}
+
+type CronConfig struct {
+	ArchiveDaysThreshold        int `koanf:"archive_days_threshold" validate:"required"`
+	BatchSize                   int `koanf:"batch_size" validate:"required"`
+	ReminderHours               int `koanf:"reminder_hours" validate:"required"`
+	MaxTodosPerUserNotification int `koanf:"max_todos_per_user_notification" validate:"required"`
 }
 
 func Load() *Config {
