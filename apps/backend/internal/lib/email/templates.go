@@ -3,5 +3,7 @@ package email
 type Template string
 
 const (
-	WelcomeTemplate Template = "welcome"
+	DueReminderTemplate     Template = "due-reminder"
+	OverdueReminderTemplate Template = "overdue-reminder"
+	WeeklyReportTemplate    Template = "weekly-report"
 )

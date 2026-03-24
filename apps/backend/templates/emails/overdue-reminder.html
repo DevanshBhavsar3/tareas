@@ -1,0 +1,193 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Overdue Todo</title>
+    <meta
+      name="preview"
+      content='Overdue: "{{.TodoTitle}}" needs your attention'
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    style="
+      background: #f4f4f5;
+      font-family: &quot;Inter&quot;, ui-sans-serif, system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+    "
+  >
+    <div
+      style="
+        background: #ffffff;
+        padding: 32px;
+        border-radius: 12px;
+        border: 1px solid #e4e4e7;
+        margin: 40px auto;
+        max-width: 600px;
+      "
+    >
+      <!-- Header -->
+      <div style="margin-bottom: 24px; text-align: left">
+        <h1
+          style="
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.025em;
+            color: #09090b;
+            margin: 0;
+          "
+        >
+          Tareas
+        </h1>
+        <p
+          style="
+            font-size: 14px;
+            font-weight: 500;
+            color: #71717a;
+            margin-top: 16px;
+            margin-bottom: 0;
+          "
+        >
+          Overdue Todo
+        </p>
+      </div>
+      <!-- Urgency Section -->
+      <div
+        style="
+          background: #fee2e2;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+        "
+      >
+        <p
+          style="
+            font-weight: 600;
+            font-size: 18px;
+            margin: 0 0 8px 0;
+            color: #09090b;
+          "
+        >
+          {{.TodoTitle}} is {{.DaysOverdue}} days overdue
+        </p>
+        <p style="color: #71717a; font-size: 14px; margin: 0">
+          Was due: {{.DueDate}}
+        </p>
+      </div>
+      <!-- Message -->
+      <div>
+        <p style="color: #71717a; font-size: 14px; line-height: 1.6">
+          Your todo item is now overdue and needs immediate attention. Don't let
+          important tasks fall behind schedule!
+        </p>
+      </div>
+      <!-- Buttons -->
+      <div style="margin: 32px 0; text-align: center">
+        <a
+          href="/todos?id={{.TodoID}}"
+          style="
+            background: #09090b;
+            color: #fafafa;
+            font-weight: 500;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 12px;
+            font-size: 14px;
+          "
+        >
+          View Todo
+        </a>
+        <a
+          href="/todos?id={{.TodoID}}&action=complete"
+          style="
+            background: #22c55e;
+            color: #ffffff;
+            font-weight: 500;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+          "
+        >
+          Mark Complete
+        </a>
+      </div>
+      <!-- Tip Section -->
+      <div
+        style="
+          background: #dbeafe;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+        "
+      >
+        <p
+          style="
+            color: #09090b;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 0 0 8px 0;
+          "
+        >
+          Need to reschedule?
+        </p>
+        <p style="color: #71717a; font-size: 14px; margin: 0">
+          If this todo is no longer relevant or needs a new timeline, you can:
+        </p>
+        <ul
+          style="
+            color: #71717a;
+            font-size: 14px;
+            margin: 8px 0 0 0;
+            padding-left: 24px;
+          "
+        >
+          <li>Update the due date to a more realistic timeline</li>
+          <li>Break it down into smaller, manageable tasks</li>
+          <li>Archive it if it's no longer needed</li>
+        </ul>
+      </div>
+      <!-- Pro Tip Section -->
+      <div
+        style="
+          background: #f4f4f5;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+        "
+      >
+        <p style="color: #71717a; font-size: 14px; margin: 0; line-height: 1.6">
+          <strong style="color: #09090b">Stay organized:</strong> Regular review
+          of your todos helps prevent items from becoming overdue. Consider
+          setting aside time each week to review and prioritize your tasks.
+        </p>
+      </div>
+      <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0" />
+      <!-- Footer Info -->
+      <div>
+        <p style="color: #71717a; font-size: 12px; line-height: 1.6">
+          You're receiving this notification because you have an overdue todo
+          item.
+          <a
+            href="/settings/notifications"
+            style="color: #3b82f6; text-decoration: none"
+          >
+            Manage notification preferences </a
+          >.
+        </p>
+      </div>
+      <!-- Copyright -->
+      <div style="margin-top: 32px; text-align: center">
+        <p style="color: #a1a1aa; font-size: 12px; margin: 0">Tareas.</p>
+      </div>
+    </div>
+  </body>
+</html>

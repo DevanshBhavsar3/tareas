@@ -1,0 +1,285 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Weekly Productivity Report</title>
+    <meta
+      name="preview"
+      content="Your Weekly Productivity Report ({{.WeekStart}} - {{.WeekEnd}})"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    style="
+      background: #f4f4f5;
+      font-family: &quot;Inter&quot;, ui-sans-serif, system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+    "
+  >
+    <div
+      style="
+        background: #ffffff;
+        padding: 32px;
+        border-radius: 12px;
+        border: 1px solid #e4e4e7;
+        margin: 40px auto;
+        max-width: 600px;
+      "
+    >
+      <!-- Header -->
+      <div style="margin-bottom: 24px; text-align: left">
+        <h1
+          style="
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.025em;
+            color: #09090b;
+            margin: 0;
+          "
+        >
+          Tareas
+        </h1>
+        <p
+          style="
+            font-size: 14px;
+            font-weight: 500;
+            color: #71717a;
+            margin-top: 16px;
+            margin-bottom: 0;
+          "
+        >
+          Weekly Report
+        </p>
+        <p
+          style="
+            font-size: 14px;
+            color: #a1a1aa;
+            margin-top: 4px;
+            margin-bottom: 0;
+          "
+        >
+          {{.WeekStart}} - {{.WeekEnd}}
+        </p>
+      </div>
+      <!-- Stats Overview -->
+      <div style="margin-bottom: 32px">
+        <table
+          width="100%"
+          cellpadding="0"
+          cellspacing="0"
+          style="border-collapse: separate; border-spacing: 12px 0"
+        >
+          <tr>
+            <!-- Completed -->
+            <td
+              style="
+                background: #dcfce7;
+                padding: 16px;
+                border-radius: 8px;
+                text-align: center;
+                width: 33%;
+              "
+            >
+              <p
+                style="
+                  font-size: 24px;
+                  font-weight: 700;
+                  color: #22c55e;
+                  margin: 0 0 4px 0;
+                "
+              >
+                {{.CompletedCount}}
+              </p>
+              <p style="font-size: 12px; color: #22c55e; margin: 0">
+                Completed
+              </p>
+            </td>
+            <!-- Active -->
+            <td
+              style="
+                background: #dbeafe;
+                padding: 16px;
+                border-radius: 8px;
+                text-align: center;
+                width: 33%;
+              "
+            >
+              <p
+                style="
+                  font-size: 24px;
+                  font-weight: 700;
+                  color: #3b82f6;
+                  margin: 0 0 4px 0;
+                "
+              >
+                {{.ActiveCount}}
+              </p>
+              <p style="font-size: 12px; color: #3b82f6; margin: 0">Active</p>
+            </td>
+            <!-- Overdue -->
+            <td
+              style="
+                background: #fee2e2;
+                padding: 16px;
+                border-radius: 8px;
+                text-align: center;
+                width: 33%;
+              "
+            >
+              <p
+                style="
+                  font-size: 24px;
+                  font-weight: 700;
+                  color: #ef4444;
+                  margin: 0 0 4px 0;
+                "
+              >
+                {{.OverdueCount}}
+              </p>
+              <p style="font-size: 12px; color: #ef4444; margin: 0">Overdue</p>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <!-- Completed Todos Section -->
+      {{if .HasCompleted}}
+      <div style="margin-bottom: 24px">
+        <p
+          style="
+            font-size: 16px;
+            font-weight: 600;
+            color: #22c55e;
+            margin: 0 0 12px 0;
+          "
+        >
+          Completed This Week ({{.CompletedCount}})
+        </p>
+
+        {{range .CompletedTodos}}
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #dcfce7;
+            border-radius: 8px;
+            margin-bottom: 8px;
+          "
+        >
+          <span style="color: #09090b; font-size: 14px">{{.Title}}</span>
+        </div>
+        {{end}}
+      </div>
+      {{end}}
+      <!-- Overdue Todos Section -->
+      {{if .HasOverdue}}
+      <div style="margin-bottom: 24px">
+        <p
+          style="
+            font-size: 16px;
+            font-weight: 600;
+            color: #ef4444;
+            margin: 0 0 12px 0;
+          "
+        >
+          Needs Attention ({{.OverdueCount}} overdue)
+        </p>
+
+        {{range .OverdueTodos}}
+        <div
+          style="
+            padding: 12px;
+            background: #fee2e2;
+            border-radius: 8px;
+            margin-bottom: 8px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <div>
+              <p style="color: #09090b; font-size: 14px; margin: 0">
+                {{.Title}}
+              </p>
+              {{if .DueDate}}
+              <p style="color: #ef4444; font-size: 12px; margin: 4px 0 0 0">
+                Due: {{.DueDate}}
+              </p>
+              {{end}}
+            </div>
+          </div>
+        </div>
+        {{end}}
+      </div>
+      {{end}}
+
+      <!-- Action Buttons -->
+      <div style="margin: 32px 0; text-align: center">
+        <a
+          href="/dashboard"
+          style="
+            background: #09090b;
+            color: #fafafa;
+            font-weight: 500;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 12px;
+            font-size: 14px;
+          "
+        >
+          View Dashboard
+        </a>
+        {{if .HasOverdue}}
+        <a
+          href="/todos?filter=overdue"
+          style="
+            background: #ef4444;
+            color: #ffffff;
+            font-weight: 500;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+          "
+        >
+          Review Overdue
+        </a>
+        {{end}}
+      </div>
+      <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0" />
+      <!-- Footer Info -->
+      <div>
+        <p style="color: #71717a; font-size: 12px; line-height: 1.6">
+          This is your weekly productivity summary.
+          <a
+            href="/settings/notifications"
+            style="color: #3b82f6; text-decoration: none"
+          >
+            Manage notification preferences
+          </a>
+          or
+          <a href="/dashboard" style="color: #3b82f6; text-decoration: none">
+            view your full dashboard </a
+          >.
+        </p>
+      </div>
+      <!-- Copyright -->
+      <div style="margin-top: 32px; text-align: center">
+        <p style="color: #a1a1aa; font-size: 12px; margin: 0">Tareas.</p>
+      </div>
+    </div>
+  </body>
+</html>

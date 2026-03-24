@@ -1,0 +1,158 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Todo Reminder</title>
+    <meta
+      name="preview"
+      content='Reminder: "{{.TodoTitle}}" is due in {{.DaysUntilDue}} days'
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    style="
+      background: #f4f4f5;
+      font-family: &quot;Inter&quot;, ui-sans-serif, system-ui, sans-serif;
+      margin: 0;
+      padding: 0;
+    "
+  >
+    <div
+      style="
+        background: #ffffff;
+        padding: 32px;
+        border-radius: 12px;
+        border: 1px solid #e4e4e7;
+        margin: 40px auto;
+        max-width: 600px;
+      "
+    >
+      <!-- Header -->
+      <div style="margin-bottom: 24px; text-align: left">
+        <h1
+          style="
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.025em;
+            color: #09090b;
+            margin: 0;
+          "
+        >
+          Tareas
+        </h1>
+        <p
+          style="
+            font-size: 14px;
+            font-weight: 500;
+            color: #71717a;
+            margin-top: 16px;
+            margin-bottom: 0;
+          "
+        >
+          Todo Reminder
+        </p>
+      </div>
+      <!-- Urgency Section -->
+      <div
+        style="
+          background: #fef3c7;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+        "
+      >
+        <p
+          style="
+            font-weight: 600;
+            font-size: 18px;
+            margin: 0 0 8px 0;
+            color: #09090b;
+          "
+        >
+          Reminder: &quot;{{.TodoTitle}}&quot; is due in {{.DaysUntilDue}} days
+        </p>
+        <p style="color: #71717a; font-size: 14px; margin: 0">
+          Due Date: {{.DueDate}}
+        </p>
+      </div>
+      <!-- Message -->
+      <div>
+        <p style="color: #71717a; font-size: 14px; line-height: 1.6">
+          This is a friendly reminder that your todo item is due soon. Don't let
+          it slip through the cracks!
+        </p>
+      </div>
+      <!-- Buttons -->
+      <div style="margin: 32px 0; text-align: center">
+        <a
+          href="/todos?id={{.TodoID}}"
+          style="
+            background: #09090b;
+            color: #fafafa;
+            font-weight: 500;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 12px;
+            font-size: 14px;
+          "
+        >
+          View Todo
+        </a>
+        <a
+          href="/todos?id={{.TodoID}}&action=complete"
+          style="
+            background: #22c55e;
+            color: #ffffff;
+            font-weight: 500;
+            border-radius: 9999px;
+            padding: 6px 12px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+          "
+        >
+          Mark as Completed
+        </a>
+      </div>
+      <!-- Tip -->
+      <div
+        style="
+          background: #f4f4f5;
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+        "
+      >
+        <p style="color: #71717a; font-size: 14px; margin: 0; line-height: 1.6">
+          <strong style="color: #09090b">Pro tip:</strong> Stay on top of your
+          tasks by checking your Tareas dashboard regularly and setting
+          realistic due dates.
+        </p>
+      </div>
+      <hr style="border: none; border-top: 1px solid #e4e4e7; margin: 24px 0" />
+      <!-- Footer Info -->
+      <div>
+        <p style="color: #71717a; font-size: 12px; line-height: 1.6">
+          You're receiving this reminder because you have an active todo item
+          with an upcoming due date.
+          <a
+            href="/settings/notifications"
+            style="color: #3b82f6; text-decoration: none"
+          >
+            Manage notification preferences </a
+          >.
+        </p>
+      </div>
+      <!-- Copyright -->
+      <div style="margin-top: 32px; text-align: center">
+        <p style="color: #a1a1aa; font-size: 12px; margin: 0">Tareas.</p>
+      </div>
+    </div>
+  </body>
+</html>

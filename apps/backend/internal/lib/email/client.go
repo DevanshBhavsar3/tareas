@@ -23,7 +23,7 @@ func NewClient(cfg *config.Config, logger *zerolog.Logger) *Client {
 	}
 }
 
-func (c *Client) SendEmail(to, subject string, templateName Template, data map[string]string) error {
+func (c *Client) SendEmail(to, subject string, templateName Template, data map[string]any) error {
 	tmplPath := fmt.Sprintf("templates/emails/%s.html", templateName)
 
 	tmpl, err := template.ParseFiles(tmplPath)

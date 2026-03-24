@@ -23,11 +23,15 @@ func NewServices(s *server.Server, repos *repository.Repositories) (*Services, e
 		return nil, fmt.Errorf("failed to create AWS client: %w", err)
 	}
 
+	authService := NewAuthService(s)
+
+	s.Job.SetAuthService(authService)
+
 	return &Services{
 		Todo:     NewTodoService(s, repos.Todo, repos.Category, awsClient),
 		Comment:  NewCommentService(repos.Comment, repos.Todo),
 		Category: NewCategoryService(repos.Category),
-		Auth:     NewAuthService(s),
+		Auth:     authService,
 		Job:      s.Job,
 	}, nil
 }
