@@ -47,6 +47,11 @@ func (r *TodoRepository) CreateTodo(ctx context.Context, userID string, payload 
 		) RETURNING *
 	`
 
+	if payload.Priority == nil {
+		defaultPriority := todo.PriorityLow
+		payload.Priority = &defaultPriority
+	}
+
 	rows, err := r.server.DB.Pool.Query(ctx, query, pgx.NamedArgs{
 		"user_id":        userID,
 		"title":          payload.Title,
@@ -269,6 +274,16 @@ func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *t
 	if payload.Search != nil {
 		conditions = append(conditions, "(t.title ILIKE @search OR t.description ILIKE @search)")
 		args["search"] = "%" + *payload.Search + "%"
+	}
+
+	if payload.Sort == nil {
+		defaultSort := "created_at"
+		payload.Sort = &defaultSort
+	}
+
+	if payload.Order == nil {
+		defaultOrder := "desc"
+		payload.Order = &defaultOrder
 	}
 
 	query += fmt.Sprintf(`

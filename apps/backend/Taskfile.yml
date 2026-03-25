@@ -4,6 +4,11 @@ vars:
   TAREAS_DB_DSN: '{{.TAREAS_DB_DSN | default ""}}'
 
 tasks:
+  test:
+    desc: run all tests
+    cmds:
+      - go test -v ./...
+
   run:
     desc: run the backend application
     cmds:
