@@ -1,16 +1,37 @@
-import { Badge } from '#/components/ui'
+import { Badge } from '#/components/ui/badge'
+import { Button } from '#/components/ui/button'
+import { Checkbox } from '#/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '#/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '#/components/ui/tooltip'
+import { cn } from '#/lib/utils'
+import {
+  formatCalendarDate,
+  isOverdue as checkOverdue,
+  isDueToday,
+} from '#/lib/dayjs'
 import type { PopulatedTodo } from '@tareas/zod'
 import {
   Calendar,
-  CheckCircle2,
-  Circle,
   MessageSquare,
   MoreHorizontal,
   Trash2,
   Pencil,
-  Tag,
+  Paperclip,
+  ExternalLink,
+  Flag,
+  AlertCircle,
 } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { Link } from '@tanstack/react-router'
 import type z from 'zod'
 
 type Todo = z.infer<typeof PopulatedTodo>
@@ -23,41 +44,28 @@ type TodoItemProps = {
   onClick: (todo: Todo) => void
 }
 
-const priorityVariants: Record<
-  string,
-  'default' | 'success' | 'warning' | 'danger'
-> = {
-  low: 'success',
-  medium: 'warning',
-  high: 'danger',
-}
-
-const formatDueDate = (date: string | null): string | null => {
-  if (!date) return null
-
-  const dueDate = new Date(date)
-  const today = new Date()
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  today.setHours(0, 0, 0, 0)
-  tomorrow.setHours(0, 0, 0, 0)
-  dueDate.setHours(0, 0, 0, 0)
-
-  if (dueDate.getTime() === today.getTime()) return 'Today'
-  if (dueDate.getTime() === tomorrow.getTime()) return 'Tomorrow'
-  if (dueDate < today) return 'Overdue'
-
-  return dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
-
-const isOverdue = (date: string | null, status: string): boolean => {
-  if (!date || status === 'completed') return false
-  const dueDate = new Date(date)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  dueDate.setHours(0, 0, 0, 0)
-  return dueDate < today
+const priorityConfig = {
+  low: {
+    variant: 'secondary' as const,
+    label: 'Low',
+    color: 'text-green-500',
+    borderColor: 'border-l-green-500',
+    bgColor: 'bg-green-500/5',
+  },
+  medium: {
+    variant: 'outline' as const,
+    label: 'Medium',
+    color: 'text-yellow-500',
+    borderColor: 'border-l-yellow-500',
+    bgColor: 'bg-yellow-500/5',
+  },
+  high: {
+    variant: 'destructive' as const,
+    label: 'High',
+    color: 'text-red-500',
+    borderColor: 'border-l-red-500',
+    bgColor: 'bg-red-500/5',
+  },
 }
 
 export default function TodoItem({
@@ -67,87 +75,112 @@ export default function TodoItem({
   onDelete,
   onClick,
 }: TodoItemProps) {
-  const [showMenu, setShowMenu] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
   const isCompleted = todo.status === 'completed'
-  const dueDateText = formatDueDate(todo.dueDate)
-  const overdue = isOverdue(todo.dueDate, todo.status)
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setShowMenu(false)
-      }
-    }
-
-    if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showMenu])
+  const overdue = checkOverdue(todo.dueDate, todo.status)
+  const dueToday = isDueToday(todo.dueDate)
+  const dueDateText = todo.dueDate ? formatCalendarDate(todo.dueDate) : null
+  const hasAttachments = todo.attachments && todo.attachments.length > 0
+  const hasComments = todo.comments && todo.comments.length > 0
 
   return (
     <div
-      className="group flex items-start gap-3 px-4 py-3 transition-colors hover:bg-(--bg-hover) cursor-pointer"
+      className={cn(
+        'group flex items-start gap-3 px-4 py-3.5 transition-all',
+        'hover:bg-muted/50 cursor-pointer',
+        'border-l-4 border-b border-border/50 last:border-b-0',
+        // Priority-based left border color
+        priorityConfig[todo.priority].borderColor,
+        // Completed state
+        isCompleted && 'opacity-60',
+        // Overdue state - subtle background
+        overdue && !isCompleted && 'bg-destructive/5',
+      )}
       onClick={() => onClick(todo)}
     >
       {/* Checkbox */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          onToggleComplete(todo.id, !isCompleted)
-        }}
-        className="mt-0.5 shrink-0 text-(--text-muted) transition-colors hover:text-accent-500"
-      >
-        {isCompleted ? (
-          <CheckCircle2
-            size={20}
-            className="text-(--success) fill-(--success)/20"
-          />
-        ) : (
-          <Circle size={20} />
-        )}
-      </button>
+      <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={isCompleted}
+          onCheckedChange={(checked) => onToggleComplete(todo.id, !!checked)}
+          className={cn(
+            'transition-colors',
+            overdue && !isCompleted && 'border-destructive',
+          )}
+        />
+      </div>
 
       {/* Content */}
-      <div className="min-w-0 flex-1">
-        <div className="flex gap-3">
+      <div className="min-w-0 flex-1 space-y-2">
+        {/* Title row */}
+        <div className="flex items-start gap-2">
           <p
-            className={`text-sm leading-relaxed ${isCompleted ? 'text-(--text-muted) line-through' : 'text-(--text-primary)'}`}
+            className={cn(
+              'text-sm font-medium leading-relaxed flex-1',
+              isCompleted && 'text-muted-foreground line-through',
+            )}
           >
             {todo.title}
           </p>
 
-          {/* Category */}
-          {todo.category && (
-            <span
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium"
-              style={{
-                backgroundColor: `${todo.category.color}15`,
-                color: todo.category.color,
-              }}
-            >
-              <Tag size={10} />
-              {todo.category.name}
-            </span>
+          {/* Priority indicator for high priority */}
+          {todo.priority === 'high' && !isCompleted && (
+            <Tooltip>
+              <TooltipTrigger>
+                <Flag size={14} className="text-red-500 shrink-0 mt-0.5" />
+              </TooltipTrigger>
+              <TooltipContent>High Priority</TooltipContent>
+            </Tooltip>
           )}
 
-          {/* Priority */}
-          <Badge variant={priorityVariants[todo.priority]}>
-            {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
-          </Badge>
+          {/* Overdue indicator */}
+          {overdue && !isCompleted && (
+            <Tooltip>
+              <TooltipTrigger>
+                <AlertCircle
+                  size={14}
+                  className="text-destructive shrink-0 mt-0.5"
+                />
+              </TooltipTrigger>
+              <TooltipContent>This task is overdue</TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
-        {/* Meta info */}
-        <div className="mt-1.5 flex flex-wrap items-center gap-2">
+        {/* Description preview */}
+        {todo.description && (
+          <p className="text-xs text-muted-foreground line-clamp-1">
+            {todo.description}
+          </p>
+        )}
+
+        {/* Meta row - badges and info */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Category */}
+          {todo.category && (
+            <Badge
+              variant="outline"
+              className="text-xs h-5 px-1.5"
+              style={{
+                borderColor: todo.category.color,
+                color: todo.category.color,
+                backgroundColor: `${todo.category.color}10`,
+              }}
+            >
+              {todo.category.name}
+            </Badge>
+          )}
+
           {/* Due date */}
           {dueDateText && (
             <span
-              className={`flex items-center gap-1 text-xs ${overdue ? 'text-(--danger)' : 'text-(--text-muted)'}`}
+              className={cn(
+                'flex items-center gap-1 text-xs',
+                overdue && !isCompleted
+                  ? 'text-destructive font-medium'
+                  : dueToday && !isCompleted
+                    ? 'text-yellow-600 dark:text-yellow-500 font-medium'
+                    : 'text-muted-foreground',
+              )}
             >
               <Calendar size={12} />
               {dueDateText}
@@ -155,53 +188,60 @@ export default function TodoItem({
           )}
 
           {/* Comments count */}
-          {todo.comments && todo.comments.length > 0 && (
-            <span className="flex items-center gap-1 text-xs text-(--text-muted)">
+          {hasComments && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <MessageSquare size={12} />
-              {todo.comments.length}
+              {todo.comments!.length}
+            </span>
+          )}
+
+          {/* Attachments count */}
+          {hasAttachments && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Paperclip size={12} />
+              {todo.attachments!.length}
             </span>
           )}
         </div>
       </div>
 
       {/* Actions menu */}
-      <div className="relative" ref={menuRef}>
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            setShowMenu(!showMenu)
-          }}
-          className="shrink-0 rounded-md p-1 text-(--text-muted) opacity-0 transition-all hover:bg-(--bg-tertiary) hover:text-(--text-primary) group-hover:opacity-100"
-        >
-          <MoreHorizontal size={16} />
-        </button>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <Tooltip>
+          <TooltipTrigger>
+            <Link to="/todos/$todoId" params={{ todoId: todo.id }}>
+              <Button variant="ghost" size="icon-sm">
+                <ExternalLink size={14} />
+              </Button>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent>Open in full page</TooltipContent>
+        </Tooltip>
 
-        {showMenu && (
-          <div className="absolute right-0 top-full z-10 mt-1 w-36 rounded-lg border border-(--border-color) bg-(--bg-primary) py-1 shadow-lg">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onEdit(todo)
-                setShowMenu(false)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-(--text-primary) transition-colors hover:bg-(--bg-hover)"
-            >
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="ghost" size="icon-sm" />}
+          >
+            <MoreHorizontal size={16} />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onEdit(todo)}>
               <Pencil size={14} />
               Edit
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete(todo.id)
-                setShowMenu(false)
-              }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-(--danger) transition-colors hover:bg-(--bg-hover)"
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => onDelete(todo.id)}
             >
               <Trash2 size={14} />
               Delete
-            </button>
-          </div>
-        )}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   )

@@ -1,8 +1,27 @@
-import { Badge, Modal } from '#/components/ui'
-import { CommentSection } from '#/components/todos'
+import { Badge } from '#/components/ui/badge'
+import { Button } from '#/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
+import { Separator } from '#/components/ui/separator'
+import { ScrollArea } from '#/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
+import { CommentSection, AttachmentSection } from '#/components/todos'
 import type { PopulatedTodo } from '@tareas/zod'
-import { Calendar, Flag, Tag } from 'lucide-react'
+import {
+  Calendar,
+  Flag,
+  Tag,
+  ExternalLink,
+  MessageSquare,
+  Paperclip,
+} from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import type z from 'zod'
+import { formatDate } from '#/lib/dayjs'
 
 type Todo = z.infer<typeof PopulatedTodo>
 
@@ -14,92 +33,116 @@ type TodoDetailProps = {
 
 const priorityVariants: Record<
   string,
-  'default' | 'success' | 'warning' | 'danger'
+  'default' | 'secondary' | 'destructive' | 'outline'
 > = {
-  low: 'success',
-  medium: 'warning',
-  high: 'danger',
+  low: 'secondary',
+  medium: 'outline',
+  high: 'destructive',
 }
 
 const statusVariants: Record<
   string,
-  'default' | 'success' | 'warning' | 'danger' | 'info'
+  'default' | 'secondary' | 'destructive' | 'outline'
 > = {
-  draft: 'default',
-  active: 'info',
-  completed: 'success',
-  archived: 'default',
-}
-
-const formatDate = (dateStr: string | null): string => {
-  if (!dateStr) return 'No due date'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  draft: 'outline',
+  active: 'default',
+  completed: 'secondary',
+  archived: 'outline',
 }
 
 export default function TodoDetail({ todo, isOpen, onClose }: TodoDetailProps) {
   if (!todo) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={todo.title} size="lg">
-      <div className="space-y-6">
-        {/* Meta info */}
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge variant={statusVariants[todo.status]}>
-            {todo.status.charAt(0).toUpperCase() + todo.status.slice(1)}
-          </Badge>
-          <Badge variant={priorityVariants[todo.priority]}>
-            <Flag size={12} className="mr-1" />
-            {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
-          </Badge>
-          {todo.category && (
-            <span
-              className="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-xs font-medium"
-              style={{
-                backgroundColor: `${todo.category.color}15`,
-                color: todo.category.color,
-              }}
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
+        <DialogHeader>
+          <div className="flex items-start justify-between gap-4 pr-6">
+            <DialogTitle className="text-left">{todo.title}</DialogTitle>
+            <Link
+              to="/todos/$todoId"
+              params={{ todoId: todo.id }}
+              onClick={onClose}
             >
-              <Tag size={12} />
-              {todo.category.name}
-            </span>
-          )}
-        </div>
-
-        {/* Due date */}
-        <div className="flex items-center gap-2 text-sm text-(--text-muted)">
-          <Calendar size={16} />
-          <span>{formatDate(todo.dueDate)}</span>
-        </div>
-
-        {/* Description */}
-        {todo.description && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium text-(--text-primary)">
-              Description
-            </h4>
-            <p className="text-sm text-(--text-muted) whitespace-pre-wrap leading-relaxed">
-              {todo.description}
-            </p>
+              <Button variant="ghost" size="icon-sm">
+                <ExternalLink size={14} />
+              </Button>
+            </Link>
           </div>
-        )}
+        </DialogHeader>
 
-        {/* Divider */}
-        <div className="border-t border-(--border-color)" />
+        <ScrollArea className="flex-1 -mx-6 px-6">
+          <div className="space-y-6">
+            {/* Meta info */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant={statusVariants[todo.status]}>
+                {todo.status.charAt(0).toUpperCase() + todo.status.slice(1)}
+              </Badge>
+              <Badge variant={priorityVariants[todo.priority]}>
+                <Flag size={12} className="mr-1" />
+                {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
+              </Badge>
+              {todo.category && (
+                <Badge
+                  variant="outline"
+                  className="gap-1.5"
+                  style={{
+                    backgroundColor: `${todo.category.color}15`,
+                    borderColor: `${todo.category.color}30`,
+                    color: todo.category.color,
+                  }}
+                >
+                  <Tag size={12} />
+                  {todo.category.name}
+                </Badge>
+              )}
+            </div>
 
-        {/* Comments */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-(--text-primary)">
-            Comments ({todo.comments?.length ?? 0})
-          </h4>
-          <CommentSection todoId={todo.id} />
-        </div>
-      </div>
-    </Modal>
+            {/* Due date */}
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar size={16} />
+              <span>{formatDate(todo.dueDate)}</span>
+            </div>
+
+            {/* Description */}
+            {todo.description && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Description</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {todo.description}
+                </p>
+              </div>
+            )}
+
+            <Separator />
+
+            {/* Tabs for Comments and Attachments */}
+            <Tabs defaultValue="comments" className="w-full">
+              <TabsList className="w-full">
+                <TabsTrigger value="comments" className="flex-1 gap-2">
+                  <MessageSquare size={14} />
+                  Comments ({todo.comments?.length ?? 0})
+                </TabsTrigger>
+                <TabsTrigger value="attachments" className="flex-1 gap-2">
+                  <Paperclip size={14} />
+                  Files ({todo.attachments?.length ?? 0})
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="comments" className="mt-4">
+                <CommentSection todoId={todo.id} />
+              </TabsContent>
+
+              <TabsContent value="attachments" className="mt-4">
+                <AttachmentSection
+                  todoId={todo.id}
+                  initialAttachments={todo.attachments ?? []}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </ScrollArea>
+      </DialogContent>
+    </Dialog>
   )
 }

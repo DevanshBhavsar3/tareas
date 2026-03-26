@@ -1,25 +1,41 @@
-import Button from '#/components/Button'
+import { Button } from '#/components/ui/button'
+import { Skeleton } from '#/components/ui/skeleton'
+import { Badge } from '#/components/ui/badge'
 import {
-  EmptyState,
-  Spinner,
   ContextMenu,
-  useContextMenu,
-} from '#/components/ui'
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '#/components/ui/context-menu'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '#/components/ui/alert-dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '#/components/ui/tooltip'
 import {
   TodoItem,
   TodoForm,
   TodoFilters,
   StatsCard,
   TodoDetail,
+  CreateTaskWizard,
 } from '#/components/todos'
-import { CategoryForm, CategoryBadge } from '#/components/categories'
+import { CategoryForm } from '#/components/categories'
 import {
   useGetAllTodos,
-  useCreateTodo,
   useUpdateTodo,
   useDeleteTodo,
   useGetTodoStats,
-  type TCreateTodoPayload,
   type TUpdateTodoPayload,
 } from '#/api/hooks/todo'
 import {
@@ -30,7 +46,7 @@ import {
   type TCreateCategoryPayload,
   type TUpdateCategoryPayload,
 } from '#/api/hooks/category'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import {
   Plus,
   ListTodo,
@@ -41,44 +57,84 @@ import {
   Inbox,
   Trash2,
   Pencil,
+  Archive,
+  Flag,
   type LucideIcon,
+  Settings,
+  ChevronRight,
 } from 'lucide-react'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import type { PopulatedTodo, TodoCategory } from '@tareas/zod'
 import type z from 'zod'
 import { toast } from 'sonner'
 import { useDebounce } from '#/api/utils'
+import { cn } from '#/lib/utils'
 
-export const Route = createFileRoute('/_authed/todos/')({
-  component: Dashboard,
-})
-
-type Todo = z.infer<typeof PopulatedTodo>
-type Category = z.infer<typeof TodoCategory>
-
-type Filters = {
+// Search params schema
+type TodoSearchParams = {
   status?: string
   priority?: string
   categoryId?: string
   search?: string
 }
 
+export const Route = createFileRoute('/_authed/todos/')({
+  component: Dashboard,
+  validateSearch: (search: Record<string, unknown>): TodoSearchParams => {
+    return {
+      status: search.status as string | undefined,
+      priority: search.priority as string | undefined,
+      categoryId: search.categoryId as string | undefined,
+      search: search.search as string | undefined,
+    }
+  },
+})
+
+type Todo = z.infer<typeof PopulatedTodo>
+type Category = z.infer<typeof TodoCategory>
+
 function Dashboard() {
   const { user } = useUser()
+  const navigate = useNavigate()
+  const searchParams = Route.useSearch()
 
   // State
-  const [filters, setFilters] = useState<Filters>({})
-  const [showTodoForm, setShowTodoForm] = useState(false)
+  const [filters, setFilters] = useState<TodoSearchParams>({
+    status: searchParams.status,
+    priority: searchParams.priority,
+    categoryId: searchParams.categoryId,
+    search: searchParams.search,
+  })
+  const [showCreateWizard, setShowCreateWizard] = useState(false)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [editingTodo, setEditingTodo] = useState<Todo | null>(null)
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
-
-  // Context menu for categories
-  const categoryMenu = useContextMenu()
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null,
+  )
+  const [todoToDelete, setTodoToDelete] = useState<Todo | null>(null)
 
   const debouncedSearch = useDebounce(filters.search, 300)
+
+  // Update URL when filters change
+  const updateFilters = useCallback(
+    (newFilters: TodoSearchParams) => {
+      setFilters(newFilters)
+      navigate({
+        to: '/todos',
+        search: {
+          status: newFilters.status,
+          priority: newFilters.priority,
+          categoryId: newFilters.categoryId,
+          search: newFilters.search,
+        },
+        replace: true,
+      })
+    },
+    [navigate],
+  )
 
   // API hooks
   const { data: todosData, isLoading: todosLoading } = useGetAllTodos({
@@ -93,7 +149,6 @@ function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetTodoStats()
   const { data: categoriesData } = useGetAllCategories({})
 
-  const createTodo = useCreateTodo()
   const updateTodo = useUpdateTodo()
   const deleteTodo = useDeleteTodo()
   const createCategory = useCreateCategory()
@@ -101,9 +156,18 @@ function Dashboard() {
   const deleteCategory = useDeleteCategory()
 
   const todos = (todosData?.data ?? []) as unknown as Todo[]
-  const categories = (categoriesData?.data ?? []) as unknown as Array<
-    z.infer<typeof TodoCategory>
-  >
+  const categories = (categoriesData?.data ?? []) as unknown as Category[]
+
+  // Calculate category task counts
+  const categoryTaskCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    todos.forEach((todo) => {
+      if (todo.categoryId) {
+        counts[todo.categoryId] = (counts[todo.categoryId] || 0) + 1
+      }
+    })
+    return counts
+  }, [todos])
 
   // Get greeting based on time
   const greeting = useMemo(() => {
@@ -114,18 +178,6 @@ function Dashboard() {
   }, [])
 
   // Handlers
-  const handleCreateTodo = (data: TCreateTodoPayload) => {
-    createTodo.mutate(
-      { body: data },
-      {
-        onSuccess: () => {
-          setShowTodoForm(false)
-          toast.success('Task created successfully')
-        },
-      },
-    )
-  }
-
   const handleUpdateTodo = (data: TUpdateTodoPayload) => {
     if (!editingTodo) return
     updateTodo.mutate(
@@ -146,11 +198,15 @@ function Dashboard() {
     })
   }
 
-  const handleDeleteTodo = (todoId: string) => {
+  const handleDeleteTodo = () => {
+    if (!todoToDelete) return
     deleteTodo.mutate(
-      { todoId },
+      { todoId: todoToDelete.id },
       {
-        onSuccess: () => toast.success('Task deleted'),
+        onSuccess: () => {
+          setTodoToDelete(null)
+          toast.success('Task deleted')
+        },
       },
     )
   }
@@ -180,14 +236,18 @@ function Dashboard() {
     )
   }
 
-  const handleDeleteCategory = (categoryId: string) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) {
-      return
-    }
+  const handleDeleteCategory = () => {
+    if (!categoryToDelete) return
     deleteCategory.mutate(
-      { categoryId },
+      { categoryId: categoryToDelete.id },
       {
-        onSuccess: () => toast.success('Category deleted'),
+        onSuccess: () => {
+          setCategoryToDelete(null)
+          if (filters.categoryId === categoryToDelete.id) {
+            updateFilters({ ...filters, categoryId: undefined })
+          }
+          toast.success('Category deleted')
+        },
       },
     )
   }
@@ -198,58 +258,85 @@ function Dashboard() {
   const quickFilters: Array<{
     label: string
     icon: LucideIcon
-    filter: Filters
+    filter: TodoSearchParams
     isActive: () => boolean
+    count?: number
+    color?: string
   }> = [
     {
       label: 'All Tasks',
       icon: Inbox,
       filter: {},
-      isActive: () => !filters.status && !filters.priority,
+      isActive: () =>
+        !filters.status && !filters.priority && !filters.categoryId,
+      count: stats?.total,
     },
     {
       label: 'Active',
       icon: Clock,
       filter: { status: 'active' },
       isActive: () => filters.status === 'active',
+      count: stats?.active,
+      color: 'text-blue-500',
     },
     {
       label: 'Completed',
       icon: CheckCircle2,
       filter: { status: 'completed' },
       isActive: () => filters.status === 'completed',
+      count: stats?.completed,
+      color: 'text-green-500',
     },
     {
       label: 'High Priority',
-      icon: AlertTriangle,
+      icon: Flag,
       filter: { priority: 'high' },
       isActive: () => filters.priority === 'high',
+      color: 'text-red-500',
+    },
+    {
+      label: 'Overdue',
+      icon: AlertTriangle,
+      filter: {}, // We'll filter client-side or add API support
+      isActive: () => false, // Placeholder
+      count: stats?.overdue,
+      color: 'text-destructive',
+    },
+    {
+      label: 'Archived',
+      icon: Archive,
+      filter: { status: 'archived' },
+      isActive: () => filters.status === 'archived',
+      count: stats?.archived,
     },
   ]
 
   return (
-    <div className="min-h-screen bg-(--bg-primary)">
-      <main className="mx-auto max-w-5xl px-6 py-8">
+    <div className="min-h-screen bg-background">
+      <main className="mx-auto max-w-6xl px-6 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-(--text-primary)">
-            {greeting}, {user?.firstName ?? 'there'}
-          </h1>
-          <p className="mt-1 text-sm text-(--text-muted)">
-            {pendingCount > 0
-              ? `You have ${pendingCount} task${pendingCount === 1 ? '' : 's'} pending`
-              : 'All caught up! Time to relax.'}
-          </p>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold">
+              {greeting}, {user?.firstName ?? 'there'}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {pendingCount > 0
+                ? `You have ${pendingCount} task${pendingCount === 1 ? '' : 's'} pending`
+                : 'All caught up! Time to relax.'}
+            </p>
+          </div>
+          <Button onClick={() => setShowCreateWizard(true)} size="default">
+            <Plus size={18} />
+            New Task
+          </Button>
         </div>
 
         {/* Stats Grid */}
         <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
           {statsLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-24 animate-pulse rounded-xl border border-(--border-color) bg-(--bg-tertiary)"
-              />
+              <Skeleton key={i} className="h-24 rounded-xl" />
             ))
           ) : (
             <>
@@ -262,81 +349,272 @@ function Dashboard() {
                 label="Completed"
                 value={stats?.completed ?? 0}
                 icon={CheckCircle2}
-                color="text-(--success)"
+                color="text-green-500"
               />
               <StatsCard
                 label="Pending"
                 value={pendingCount}
                 icon={Clock}
-                color="text-(--info)"
+                color="text-blue-500"
               />
               <StatsCard
                 label="Overdue"
                 value={stats?.overdue ?? 0}
                 icon={AlertTriangle}
-                color="text-(--danger)"
+                color="text-destructive"
               />
             </>
           )}
         </div>
 
         {/* Main Content */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-4">
+          {/* Sidebar */}
+          <div className="space-y-6 lg:col-span-1">
+            {/* Quick filters */}
+            <div className="rounded-xl border bg-card">
+              <div className="border-b px-4 py-3">
+                <h3 className="text-sm font-medium">Filters</h3>
+              </div>
+              <div className="p-2">
+                {quickFilters.map((qf) => {
+                  const Icon = qf.icon
+                  const active = qf.isActive()
+                  return (
+                    <button
+                      key={qf.label}
+                      onClick={() =>
+                        updateFilters({ ...qf.filter, search: filters.search })
+                      }
+                      className={cn(
+                        'w-full flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
+                        active
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      <span className="flex items-center gap-3">
+                        <Icon size={16} className={cn(!active && qf.color)} />
+                        {qf.label}
+                      </span>
+                      {qf.count !== undefined && (
+                        <Badge
+                          variant={active ? 'default' : 'secondary'}
+                          className="h-5 min-w-[20px] justify-center px-1.5 text-xs"
+                        >
+                          {qf.count}
+                        </Badge>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Categories */}
+            <div className="rounded-xl border bg-card">
+              <div className="flex items-center justify-between border-b px-4 py-3">
+                <h3 className="text-sm font-medium">Categories</h3>
+                <div className="flex gap-1">
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        onClick={() => setShowCategoryForm(true)}
+                      >
+                        <FolderPlus size={16} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add category</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Link to="/categories">
+                        <Button size="icon-sm" variant="ghost">
+                          <Settings size={16} />
+                        </Button>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>Manage categories</TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+
+              {categories.length === 0 ? (
+                <div className="p-4 text-center">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    No categories yet
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowCategoryForm(true)}
+                  >
+                    <Plus size={14} />
+                    Create Category
+                  </Button>
+                </div>
+              ) : (
+                <div className="p-2">
+                  {categories.map((cat) => {
+                    const isActive = filters.categoryId === cat.id
+                    const taskCount = categoryTaskCounts[cat.id] || 0
+
+                    return (
+                      <ContextMenu key={cat.id}>
+                        <ContextMenuTrigger>
+                          <button
+                            onClick={() =>
+                              updateFilters({
+                                ...filters,
+                                categoryId: isActive ? undefined : cat.id,
+                              })
+                            }
+                            className={cn(
+                              'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
+                              isActive
+                                ? 'bg-primary/10 font-medium'
+                                : 'hover:bg-muted',
+                            )}
+                          >
+                            <span
+                              className="size-3 rounded-full shrink-0"
+                              style={{ backgroundColor: cat.color }}
+                            />
+                            <span
+                              className={cn(
+                                'flex-1 truncate',
+                                isActive ? 'text-primary' : 'text-foreground',
+                              )}
+                            >
+                              {cat.name}
+                            </span>
+                            {taskCount > 0 && (
+                              <Badge
+                                variant="secondary"
+                                className="h-5 min-w-[20px] justify-center px-1.5 text-xs"
+                              >
+                                {taskCount}
+                              </Badge>
+                            )}
+                            <ChevronRight
+                              size={14}
+                              className={cn(
+                                'text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity',
+                                isActive && 'opacity-100',
+                              )}
+                            />
+                          </button>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                          <ContextMenuItem
+                            onClick={() => setEditingCategory(cat)}
+                          >
+                            <Pencil size={14} />
+                            Edit
+                          </ContextMenuItem>
+                          <ContextMenuItem
+                            variant="destructive"
+                            onClick={() => setCategoryToDelete(cat)}
+                          >
+                            <Trash2 size={14} />
+                            Delete
+                          </ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Task List */}
-          <div className="lg:col-span-2">
-            <div className="rounded-xl border border-(--border-color) bg-(--bg-primary)">
+          <div className="lg:col-span-3">
+            <div className="rounded-xl border bg-card">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-(--border-color) px-5 py-4">
-                <h2 className="font-medium text-(--text-primary)">My Tasks</h2>
-                <Button size="sm" onClick={() => setShowTodoForm(true)}>
+              <div className="flex items-center justify-between border-b px-5 py-4">
+                <div>
+                  <h2 className="font-medium">Tasks</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {todos.length} task{todos.length !== 1 ? 's' : ''}
+                    {filters.status || filters.priority || filters.categoryId
+                      ? ' (filtered)'
+                      : ''}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowCreateWizard(true)}
+                >
                   <Plus size={16} />
                   Add Task
                 </Button>
               </div>
 
               {/* Filters */}
-              <div className="border-b border-(--border-color) px-5 py-3">
-                <TodoFilters filters={filters} onFiltersChange={setFilters} />
+              <div className="border-b px-5 py-3">
+                <TodoFilters
+                  filters={filters}
+                  onFiltersChange={(newFilters) =>
+                    updateFilters({ ...filters, ...newFilters })
+                  }
+                />
               </div>
 
               {/* Task Items */}
               {todosLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Spinner size={24} />
+                <div className="space-y-2 p-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
                 </div>
               ) : todos.length === 0 ? (
-                <EmptyState
-                  icon={Inbox}
-                  title="No tasks found"
-                  description={
-                    filters.search ||
+                <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+                  <div className="rounded-full bg-muted p-4 mb-4">
+                    <Inbox className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-base font-medium mb-1">No tasks found</h3>
+                  <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+                    {filters.search ||
                     filters.status ||
                     filters.priority ||
                     filters.categoryId
-                      ? 'Try adjusting your filters'
-                      : 'Create your first task to get started'
-                  }
-                  action={
-                    !filters.search &&
+                      ? 'Try adjusting your filters or search query'
+                      : 'Create your first task to get started with your productivity journey'}
+                  </p>
+                  {!filters.search &&
                     !filters.status &&
                     !filters.priority &&
-                    !filters.categoryId ? (
-                      <Button size="sm" onClick={() => setShowTodoForm(true)}>
+                    !filters.categoryId && (
+                      <Button onClick={() => setShowCreateWizard(true)}>
                         <Plus size={16} />
-                        Add Task
+                        Create Your First Task
                       </Button>
-                    ) : undefined
-                  }
-                />
+                    )}
+                  {(filters.search ||
+                    filters.status ||
+                    filters.priority ||
+                    filters.categoryId) && (
+                    <Button variant="outline" onClick={() => updateFilters({})}>
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
               ) : (
-                <div className="divide-y divide-(--border-color)">
+                <div>
                   {todos.map((todo) => (
                     <TodoItem
                       key={todo.id}
                       todo={todo}
                       onToggleComplete={handleToggleComplete}
                       onEdit={(t) => setEditingTodo(t)}
-                      onDelete={handleDeleteTodo}
+                      onDelete={(todoId) => {
+                        const todoToDelete = todos.find((t) => t.id === todoId)
+                        if (todoToDelete) setTodoToDelete(todoToDelete)
+                      }}
                       onClick={(t) => setSelectedTodo(t)}
                     />
                   ))}
@@ -344,112 +622,13 @@ function Dashboard() {
               )}
             </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-4">
-            {/* Categories */}
-            <div className="rounded-xl border border-(--border-color) bg-(--bg-primary) p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-(--text-primary)">
-                  Categories
-                </h3>
-                <Button
-                  size="sm"
-                  variant="icon"
-                  onClick={() => setShowCategoryForm(true)}
-                >
-                  <FolderPlus size={16} />
-                </Button>
-              </div>
-
-              {categories.length === 0 ? (
-                <p className="text-sm text-(--text-muted) text-center py-4">
-                  No categories yet
-                </p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((cat) => (
-                    <CategoryBadge
-                      key={cat.id}
-                      name={cat.name}
-                      color={cat.color}
-                      onClick={() =>
-                        setFilters((f) =>
-                          f.categoryId === cat.id
-                            ? { ...f, categoryId: undefined }
-                            : { ...f, categoryId: cat.id },
-                        )
-                      }
-                      onContextMenu={(e) => categoryMenu.open(e, cat)}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* Category context menu */}
-              <ContextMenu
-                position={categoryMenu.position}
-                onClose={categoryMenu.close}
-                items={[
-                  {
-                    label: 'Edit',
-                    icon: Pencil,
-                    onClick: () => {
-                      if (categoryMenu.data) {
-                        setEditingCategory(categoryMenu.data as Category)
-                      }
-                    },
-                  },
-                  {
-                    label: 'Delete',
-                    icon: Trash2,
-                    variant: 'danger',
-                    onClick: () => {
-                      if (categoryMenu.data) {
-                        handleDeleteCategory((categoryMenu.data as Category).id)
-                      }
-                    },
-                  },
-                ]}
-              />
-            </div>
-
-            {/* Quick filters */}
-            <div className="rounded-xl border border-(--border-color) bg-(--bg-primary) p-4">
-              <h3 className="text-sm font-medium text-(--text-primary) mb-3">
-                Quick Filters
-              </h3>
-              <div className="space-y-1">
-                {quickFilters.map((qf) => {
-                  const Icon = qf.icon
-                  const active = qf.isActive()
-                  return (
-                    <button
-                      key={qf.label}
-                      onClick={() => setFilters(qf.filter)}
-                      className={`w-full flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                        active
-                          ? 'bg-(--bg-tertiary) text-(--text-primary)'
-                          : 'text-(--text-muted) hover:bg-(--bg-hover)'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {qf.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
         </div>
       </main>
 
       {/* Modals */}
-      <TodoForm
-        isOpen={showTodoForm}
-        onClose={() => setShowTodoForm(false)}
-        onSubmit={handleCreateTodo}
-        isLoading={createTodo.isPending}
+      <CreateTaskWizard
+        isOpen={showCreateWizard}
+        onClose={() => setShowCreateWizard(false)}
       />
 
       <TodoForm
@@ -480,6 +659,56 @@ function Dashboard() {
         category={editingCategory}
         isLoading={updateCategory.isPending}
       />
+
+      {/* Delete Todo Confirmation */}
+      <AlertDialog
+        open={!!todoToDelete}
+        onOpenChange={(open) => !open && setTodoToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{todoToDelete?.title}"? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTodo}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Category Confirmation */}
+      <AlertDialog
+        open={!!categoryToDelete}
+        onOpenChange={(open) => !open && setCategoryToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Category</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{categoryToDelete?.name}"? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteCategory}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

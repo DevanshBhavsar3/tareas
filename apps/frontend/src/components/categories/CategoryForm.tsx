@@ -1,6 +1,16 @@
-import { Input, Modal, Textarea } from '#/components/ui'
-import Button from '#/components/Button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '#/components/ui/dialog'
+import { Input } from '#/components/ui/input'
+import { Textarea } from '#/components/ui/textarea'
+import { Label } from '#/components/ui/label'
+import { Button } from '#/components/ui/button'
 import { useState, useEffect } from 'react'
+import { cn } from '#/lib/utils'
 import type {
   TodoCategory,
   CreateCategoryPayload,
@@ -94,66 +104,75 @@ export default function CategoryForm({
   }
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={isEditing ? 'Edit Category' : 'Create Category'}
-      size="sm"
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Name"
-          placeholder="Category name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoFocus
-          required
-        />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditing ? 'Edit Category' : 'Create Category'}
+          </DialogTitle>
+        </DialogHeader>
 
-        <Textarea
-          label="Description"
-          placeholder="Optional description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-        />
-
-        <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-(--text-primary)">
-            Color
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {colorOptions.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setColor(c)}
-                className={`size-7 rounded-full transition-all ${
-                  color === c
-                    ? 'ring-2 ring-offset-2 ring-offset-(--bg-primary)'
-                    : 'hover:scale-110'
-                }`}
-                style={{
-                  backgroundColor: c,
-                }}
-              />
-            ))}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Name</Label>
+            <Input
+              id="name"
+              placeholder="Category name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+              required
+            />
           </div>
-        </div>
 
-        <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" disabled={isLoading || !name.trim()}>
-            {isLoading
-              ? 'Saving...'
-              : isEditing
-                ? 'Save Changes'
-                : 'Create Category'}
-          </Button>
-        </div>
-      </form>
-    </Modal>
+          <div className="space-y-2">
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Optional description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={2}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Color</Label>
+            <div className="flex flex-wrap gap-2">
+              {colorOptions.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  className={cn(
+                    'size-7 rounded-full transition-all',
+                    color === c
+                      ? 'ring-2 ring-offset-2 ring-offset-background'
+                      : 'hover:scale-110',
+                  )}
+                  style={{
+                    backgroundColor: c,
+                    ...(color === c && { ringColor: c }),
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <DialogFooter className="pt-4">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading || !name.trim()}>
+              {isLoading
+                ? 'Saving...'
+                : isEditing
+                  ? 'Save Changes'
+                  : 'Create Category'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }

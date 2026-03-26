@@ -1,4 +1,4 @@
-import Button from '#/components/Button'
+import { Button } from '#/components/ui/button'
 import { SignedIn, SignedOut, SignInButton, useAuth } from '@clerk/clerk-react'
 import { createFileRoute } from '@tanstack/react-router'
 import {
@@ -14,7 +14,7 @@ import {
 export const Route = createFileRoute('/')({ component: LandingPage })
 
 type Feature = {
-  icon: any
+  icon: React.ElementType
   title: string
   description: string
 }
@@ -91,7 +91,7 @@ function LandingPage() {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             {!isLoaded ? (
               <SignInButton forceRedirectUrl={'/todos'}>
-                <Button size="md">
+                <Button size="lg">
                   Start for free
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Button>
@@ -100,7 +100,7 @@ function LandingPage() {
               <>
                 <SignedIn>
                   <a href="/todos">
-                    <Button size="md">
+                    <Button size="lg">
                       Dashboard
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </Button>
@@ -108,7 +108,7 @@ function LandingPage() {
                 </SignedIn>
                 <SignedOut>
                   <SignInButton forceRedirectUrl={'/todos'}>
-                    <Button size="md">
+                    <Button size="lg">
                       Start for free
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </Button>
@@ -177,7 +177,7 @@ function LandingPage() {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             {!isLoaded ? (
               <SignInButton forceRedirectUrl={'/todos'}>
-                <Button size="md">
+                <Button size="lg">
                   Start for free
                   <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Button>
@@ -186,7 +186,7 @@ function LandingPage() {
               <>
                 <SignedIn>
                   <a href="/todos">
-                    <Button size="md">
+                    <Button size="lg">
                       Dashboard
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </Button>
@@ -194,7 +194,7 @@ function LandingPage() {
                 </SignedIn>
                 <SignedOut>
                   <SignInButton forceRedirectUrl={'/todos'}>
-                    <Button size="md">
+                    <Button size="lg">
                       Get started
                       <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                     </Button>

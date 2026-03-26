@@ -1,6 +1,6 @@
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import Button from './Button'
+import { Button } from '#/components/ui/button'
 
 type ThemeMode = 'light' | 'dark' | 'auto'
 
@@ -71,19 +71,19 @@ export default function ThemeToggle() {
 
   return (
     <Button
-      size="sm"
-      variant="icon"
+      size="icon-sm"
+      variant="ghost"
       type="button"
       onClick={toggleMode}
       aria-label={label}
       title={label}
     >
       {mode === 'auto' ? (
-        <MonitorIcon size={16} className="text-(--text-muted)" />
+        <MonitorIcon size={16} className="text-muted-foreground" />
       ) : mode === 'dark' ? (
-        <MoonIcon size={16} className="text-(--text-muted)" />
+        <MoonIcon size={16} className="text-muted-foreground" />
       ) : (
-        <SunIcon size={16} className="text-(--text-muted)" />
+        <SunIcon size={16} className="text-muted-foreground" />
       )}
     </Button>
   )

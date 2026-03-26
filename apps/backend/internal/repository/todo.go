@@ -107,15 +107,19 @@ func (r *TodoRepository) GetTodoByID(ctx context.Context, userID string, payload
 				'[]'::JSONB
 			) as comments,
 			COALESCE (
-				jsonb_agg(
-					to_jsonb(camel(tattachment))
-					ORDER BY
-						tattachment.created_at ASC
-				) FILTER (
-					WHERE
-						tattachment.id IS NOT NULL
+				(
+					SELECT 
+						jsonb_agg(a.obj ORDER BY a.created_at ASC)
+					FROM (
+						SELECT DISTINCT ON (ta.id)
+							ta.created_at,
+							to_jsonb(camel(ta)) AS obj
+						FROM todo_attachments ta
+						WHERE ta.todo_id = t.id
+						ORDER BY ta.id, ta.created_at ASC
+					) a
 				),
-				'[]'::JSONB
+				'[]'::jsonb
 			) as attachments
 		FROM todos t
 			LEFT JOIN todo_categories c ON c.id = t.category_id AND c.user_id=@user_id
@@ -202,15 +206,19 @@ func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *t
 				'[]'::JSONB
 			) as comments,
 			COALESCE (
-				jsonb_agg(
-					to_jsonb(camel(tattachment))
-					ORDER BY
-						tattachment.created_at ASC
-				) FILTER (
-					WHERE
-						tattachment.id IS NOT NULL
+				(
+					SELECT 
+						jsonb_agg(a.obj ORDER BY a.created_at ASC)
+					FROM (
+						SELECT DISTINCT ON (ta.id)
+							ta.created_at,
+							to_jsonb(camel(ta)) AS obj
+						FROM todo_attachments ta
+						WHERE ta.todo_id = t.id
+						ORDER BY ta.id, ta.created_at ASC
+					) a
 				),
-				'[]'::JSONB
+				'[]'::jsonb
 			) as attachments
 		FROM todos t
 			LEFT JOIN todo_categories c ON c.id = t.category_id AND c.user_id=@user_id

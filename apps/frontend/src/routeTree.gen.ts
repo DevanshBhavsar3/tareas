@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedTodosIndexRouteImport } from './routes/_authed/todos/index'
+import { Route as AuthedCategoriesIndexRouteImport } from './routes/_authed/categories/index'
+import { Route as AuthedTodosTodoIdRouteImport } from './routes/_authed/todos/$todoId'
 
 const AuthedRoute = AuthedRouteImport.update({
   id: '/_authed',
@@ -27,27 +29,49 @@ const AuthedTodosIndexRoute = AuthedTodosIndexRouteImport.update({
   path: '/todos/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedCategoriesIndexRoute = AuthedCategoriesIndexRouteImport.update({
+  id: '/categories/',
+  path: '/categories/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedTodosTodoIdRoute = AuthedTodosTodoIdRouteImport.update({
+  id: '/todos/$todoId',
+  path: '/todos/$todoId',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/todos/$todoId': typeof AuthedTodosTodoIdRoute
+  '/categories/': typeof AuthedCategoriesIndexRoute
   '/todos/': typeof AuthedTodosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/todos/$todoId': typeof AuthedTodosTodoIdRoute
+  '/categories': typeof AuthedCategoriesIndexRoute
   '/todos': typeof AuthedTodosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authed': typeof AuthedRouteWithChildren
+  '/_authed/todos/$todoId': typeof AuthedTodosTodoIdRoute
+  '/_authed/categories/': typeof AuthedCategoriesIndexRoute
   '/_authed/todos/': typeof AuthedTodosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/todos/'
+  fullPaths: '/' | '/todos/$todoId' | '/categories/' | '/todos/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/todos'
-  id: '__root__' | '/' | '/_authed' | '/_authed/todos/'
+  to: '/' | '/todos/$todoId' | '/categories' | '/todos'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authed'
+    | '/_authed/todos/$todoId'
+    | '/_authed/categories/'
+    | '/_authed/todos/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,14 +102,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedTodosIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/categories/': {
+      id: '/_authed/categories/'
+      path: '/categories'
+      fullPath: '/categories/'
+      preLoaderRoute: typeof AuthedCategoriesIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/todos/$todoId': {
+      id: '/_authed/todos/$todoId'
+      path: '/todos/$todoId'
+      fullPath: '/todos/$todoId'
+      preLoaderRoute: typeof AuthedTodosTodoIdRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
 interface AuthedRouteChildren {
+  AuthedTodosTodoIdRoute: typeof AuthedTodosTodoIdRoute
+  AuthedCategoriesIndexRoute: typeof AuthedCategoriesIndexRoute
   AuthedTodosIndexRoute: typeof AuthedTodosIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedTodosTodoIdRoute: AuthedTodosTodoIdRoute,
+  AuthedCategoriesIndexRoute: AuthedCategoriesIndexRoute,
   AuthedTodosIndexRoute: AuthedTodosIndexRoute,
 }
 

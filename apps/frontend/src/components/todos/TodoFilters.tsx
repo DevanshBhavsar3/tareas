@@ -1,6 +1,15 @@
-import { Select } from '#/components/ui'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '#/components/ui/select'
+import { Input } from '#/components/ui/input'
+import { Button } from '#/components/ui/button'
 import { useGetAllCategories } from '#/api/hooks/category'
-import { Search, X } from 'lucide-react'
+import { Search, X, Flag, Circle } from 'lucide-react'
+import { useMemo } from 'react'
 
 type Filters = {
   status?: string
@@ -15,19 +24,17 @@ type TodoFiltersProps = {
 }
 
 const statusOptions = [
-  { value: '', label: 'Status' },
   { value: 'draft', label: 'Draft' },
   { value: 'active', label: 'Active' },
   { value: 'completed', label: 'Completed' },
   { value: 'archived', label: 'Archived' },
-]
+] as const
 
 const priorityOptions = [
-  { value: '', label: 'Priority' },
-  { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'high', label: 'High' },
-]
+  { value: 'low', label: 'Low', color: 'text-green-500' },
+  { value: 'medium', label: 'Medium', color: 'text-yellow-500' },
+  { value: 'high', label: 'High', color: 'text-red-500' },
+] as const
 
 export default function TodoFilters({
   filters,
@@ -37,12 +44,8 @@ export default function TodoFilters({
   const categories = (categoriesData?.data ?? []) as unknown as Array<{
     id: string
     name: string
+    color: string
   }>
-
-  const categoryOptions = [
-    { value: '', label: 'Category' },
-    ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
-  ]
 
   const hasActiveFilters =
     filters.status || filters.priority || filters.categoryId || filters.search
@@ -51,71 +54,164 @@ export default function TodoFilters({
     onFiltersChange({})
   }
 
+  // Memoized lookups for display values
+  const selectedStatusLabel = useMemo(
+    () => statusOptions.find((opt) => opt.value === filters.status)?.label,
+    [filters.status],
+  )
+
+  const selectedPriority = useMemo(
+    () => priorityOptions.find((opt) => opt.value === filters.priority),
+    [filters.priority],
+  )
+
+  const selectedCategory = useMemo(
+    () => categories.find((cat) => cat.id === filters.categoryId),
+    [categories, filters.categoryId],
+  )
+
   return (
     <div className="flex flex-col flex-wrap items-center gap-3">
       {/* Search */}
       <div className="relative flex-1 w-full">
         <Search
           size={16}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-(--text-muted)"
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
-        <input
+        <Input
           type="text"
           placeholder="Search tasks..."
           value={filters.search ?? ''}
           onChange={(e) =>
             onFiltersChange({ ...filters, search: e.target.value || undefined })
           }
-          className="w-full rounded-lg border border-(--border-color) bg-(--bg-primary) pl-9 pr-3 py-2 text-sm text-(--text-primary) placeholder:text-(--text-tertiary) transition-colors focus:border-accent-500 focus:outline-none focus:ring-1 focus:ring-accent-500"
+          className="w-full pl-9"
         />
       </div>
 
       <div className="grid grid-cols-4 gap-3 w-full">
         {/* Status Filter */}
         <Select
-          options={statusOptions}
           value={filters.status ?? ''}
-          onChange={(e) =>
+          onValueChange={(v) =>
             onFiltersChange({
               ...filters,
-              status: e.target.value || undefined,
+              status: v || undefined,
             })
           }
-        />
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Status">
+              {filters.status ? (
+                <span className="flex items-center gap-2">
+                  <Circle size={12} className="fill-current" />
+                  {selectedStatusLabel}
+                </span>
+              ) : (
+                'All Statuses'
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Statuses</SelectItem>
+            {statusOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                <span className="flex items-center gap-2">
+                  <Circle size={12} className="fill-current" />
+                  {opt.label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Priority Filter */}
         <Select
-          options={priorityOptions}
           value={filters.priority ?? ''}
-          onChange={(e) =>
+          onValueChange={(v) =>
             onFiltersChange({
               ...filters,
-              priority: e.target.value || undefined,
+              priority: v || undefined,
             })
           }
-        />
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Priority">
+              {selectedPriority ? (
+                <span className="flex items-center gap-2">
+                  <Flag size={12} className={selectedPriority.color} />
+                  {selectedPriority.label}
+                </span>
+              ) : (
+                'All Priorities'
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Priorities</SelectItem>
+            {priorityOptions.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                <span className="flex items-center gap-2">
+                  <Flag size={12} className={opt.color} />
+                  {opt.label}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Category Filter */}
         <Select
-          options={categoryOptions}
           value={filters.categoryId ?? ''}
-          onChange={(e) =>
+          onValueChange={(v) =>
             onFiltersChange({
               ...filters,
-              categoryId: e.target.value || undefined,
+              categoryId: v || undefined,
             })
           }
-        />
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Category">
+              {selectedCategory ? (
+                <span className="flex items-center gap-2">
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: selectedCategory.color }}
+                  />
+                  {selectedCategory.name}
+                </span>
+              ) : (
+                'All Categories'
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All Categories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                <span className="flex items-center gap-2">
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: cat.color }}
+                  />
+                  {cat.name}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Clear Filters */}
         {hasActiveFilters && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={clearFilters}
-            className="flex items-center gap-1.5 rounded-lg justify-center px-3 py-2 text-sm text-(--text-muted) transition-colors hover:bg-(--bg-hover) hover:text-(--text-primary)"
+            className="flex items-center gap-1.5"
           >
             <X size={14} />
             Clear
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -18,6 +18,7 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import Header from '#/components/Header'
 import { Toaster } from 'sonner'
+import { TooltipProvider } from '#/components/ui/tooltip'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -59,22 +60,24 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="font-sans antialiased wrap:anywhere]">
         <ClerkProvider>
           <TanStackQueryProvider>
-            <Toaster />
-            <Header />
-            {children}
-            <Footer />
-            <TanStackDevtools
-              config={{
-                position: 'bottom-right',
-              }}
-              plugins={[
-                {
-                  name: 'Tanstack Router',
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                TanStackQueryDevtools,
-              ]}
-            />
+            <TooltipProvider>
+              <Toaster />
+              <Header />
+              {children}
+              <Footer />
+              <TanStackDevtools
+                config={{
+                  position: 'bottom-right',
+                }}
+                plugins={[
+                  {
+                    name: 'Tanstack Router',
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                  TanStackQueryDevtools,
+                ]}
+              />
+            </TooltipProvider>
           </TanStackQueryProvider>
         </ClerkProvider>
         <Scripts />

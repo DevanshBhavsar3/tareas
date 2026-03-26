@@ -4,33 +4,15 @@ import {
   useDeleteComment,
   useUpdateComment,
 } from '#/api/hooks/comment'
-import { Textarea } from '#/components/ui'
-import Button from '#/components/Button'
-import { Spinner } from '#/components/ui'
-import { Send, Trash2, Pencil, X, Check } from 'lucide-react'
-import { useState } from 'react'
+import { Textarea } from '#/components/ui/textarea'
+import { Button } from '#/components/ui/button'
+import { Skeleton } from '#/components/ui/skeleton'
+import { Send, Trash2, Pencil, X, Check, Loader2 } from 'lucide-react'
+import { useState, useRef, useCallback } from 'react'
+import { formatRelativeTime } from '#/lib/dayjs'
 
 type CommentSectionProps = {
   todoId: string
-}
-
-const formatDate = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
-
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
 }
 
 export default function CommentSection({ todoId }: CommentSectionProps) {
@@ -43,19 +25,35 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
 
-  const handleAddComment = () => {
-    if (!newComment.trim()) return
+  // Guard against double submission
+  const isSubmittingRef = useRef(false)
+
+  const handleAddComment = useCallback(() => {
+    const trimmedComment = newComment.trim()
+    if (!trimmedComment || addComment.isPending || isSubmittingRef.current)
+      return
+
+    // Set guard immediately
+    isSubmittingRef.current = true
+    // Clear input immediately to prevent re-submission
+    setNewComment('')
 
     addComment.mutate(
       {
         todoId,
-        body: { content: newComment.trim() },
+        body: { content: trimmedComment },
       },
       {
-        onSuccess: () => setNewComment(''),
+        onSettled: () => {
+          isSubmittingRef.current = false
+        },
+        onError: () => {
+          // Restore comment on error
+          setNewComment(trimmedComment)
+        },
       },
     )
-  }
+  }, [newComment, todoId, addComment])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -74,13 +72,15 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
     setEditContent('')
   }
 
-  const handleSaveEdit = () => {
-    if (!editingId || !editContent.trim()) return
+  const handleSaveEdit = useCallback(() => {
+    if (!editingId || !editContent.trim() || updateComment.isPending) return
+
+    const trimmedContent = editContent.trim()
 
     updateComment.mutate(
       {
         commentId: editingId,
-        body: { content: editContent.trim() },
+        body: { content: trimmedContent },
       },
       {
         onSuccess: () => {
@@ -89,7 +89,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
         },
       },
     )
-  }
+  }, [editingId, editContent, updateComment])
 
   const handleEditKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -101,10 +101,20 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
     }
   }
 
+  const handleDelete = useCallback(
+    (commentId: string) => {
+      if (deleteComment.isPending) return
+      deleteComment.mutate({ commentId })
+    },
+    [deleteComment],
+  )
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Spinner size={20} />
+      <div className="space-y-3">
+        <Skeleton className="h-20 w-full" />
+        <Skeleton className="h-16 w-full" />
+        <Skeleton className="h-16 w-full" />
       </div>
     )
   }
@@ -119,6 +129,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={handleKeyDown}
           rows={2}
+          disabled={addComment.isPending}
         />
         <div className="flex justify-end">
           <Button
@@ -126,7 +137,11 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
             onClick={handleAddComment}
             disabled={!newComment.trim() || addComment.isPending}
           >
-            {addComment.isPending ? <Spinner size={14} /> : <Send size={14} />}
+            {addComment.isPending ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Send size={14} />
+            )}
             Add
           </Button>
         </div>
@@ -138,7 +153,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
           comments.map((comment) => (
             <div
               key={comment.id}
-              className="group rounded-lg border border-(--border-color) bg-(--bg-muted) p-3"
+              className="group rounded-lg border bg-muted/30 p-3"
             >
               {editingId === comment.id ? (
                 /* Edit mode */
@@ -149,12 +164,14 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                     onKeyDown={handleEditKeyDown}
                     rows={2}
                     autoFocus
+                    disabled={updateComment.isPending}
                   />
                   <div className="flex justify-end gap-2">
                     <Button
                       size="sm"
-                      variant="secondary"
+                      variant="outline"
                       onClick={handleCancelEdit}
+                      disabled={updateComment.isPending}
                     >
                       <X size={14} />
                       Cancel
@@ -165,7 +182,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                       disabled={!editContent.trim() || updateComment.isPending}
                     >
                       {updateComment.isPending ? (
-                        <Spinner size={14} />
+                        <Loader2 size={14} className="animate-spin" />
                       ) : (
                         <Check size={14} />
                       )}
@@ -177,30 +194,32 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                 /* View mode */
                 <>
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm text-(--text-primary) whitespace-pre-wrap">
+                    <p className="text-sm whitespace-pre-wrap">
                       {comment.content}
                     </p>
                     <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
                         onClick={() =>
                           handleStartEdit(comment.id, comment.content)
                         }
-                        className="rounded p-1 text-(--text-muted) transition-all hover:bg-(--bg-hover) hover:text-(--text-primary)"
                       >
                         <Pencil size={14} />
-                      </button>
-                      <button
-                        onClick={() =>
-                          deleteComment.mutate({ commentId: comment.id })
-                        }
-                        className="rounded p-1 text-(--text-muted) transition-all hover:bg-(--bg-hover) hover:text-(--danger)"
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-xs"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(comment.id)}
+                        disabled={deleteComment.isPending}
                       >
                         <Trash2 size={14} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
-                  <p className="mt-2 text-xs text-(--text-muted)">
-                    {formatDate(comment.createdAt)}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {formatRelativeTime(comment.createdAt)}
                     {comment.updatedAt !== comment.createdAt && ' (edited)'}
                   </p>
                 </>
@@ -208,7 +227,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
             </div>
           ))
         ) : (
-          <p className="text-center text-sm text-(--text-muted) py-4">
+          <p className="text-center text-sm text-muted-foreground py-4">
             No comments yet. Be the first to comment!
           </p>
         )}
