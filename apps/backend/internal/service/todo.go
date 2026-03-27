@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/DevanshBhavsar3/tareas/internal/errs"
@@ -286,7 +287,7 @@ func (s *TodoService) DeleteTodoAttachment(ctx echo.Context, userID string, payl
 
 	go func() {
 		err := s.awsClient.S3.DeleteObject(
-			ctx.Request().Context(),
+			context.Background(),
 			s.server.Config.AWS.UploadBucket,
 			attachment.DownloadKey,
 		)
