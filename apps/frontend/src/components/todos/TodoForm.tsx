@@ -63,10 +63,10 @@ const priorityOptions = [
 ] as const
 
 const statusOptions = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'active', label: 'Active' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'archived', label: 'Archived' },
+  { value: 'draft', label: 'Draft', color: 'text-muted-foreground' },
+  { value: 'active', label: 'Active', color: 'text-blue-500' },
+  { value: 'completed', label: 'Completed', color: 'text-green-500' },
+  { value: 'archived', label: 'Archived', color: 'text-muted-foreground' },
 ] as const
 
 export default function TodoForm({
@@ -233,7 +233,14 @@ export default function TodoForm({
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select status">
                       <span className="flex items-center gap-2">
-                        <Circle size={14} className="fill-current" />
+                        <Circle
+                          size={14}
+                          className={cn(
+                            'fill-current',
+                            statusOptions.find((s) => s.value === status)
+                              ?.color,
+                          )}
+                        />
                         {selectedStatusLabel}
                       </span>
                     </SelectValue>
@@ -242,7 +249,10 @@ export default function TodoForm({
                     {statusOptions.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         <span className="flex items-center gap-2">
-                          <Circle size={14} className="fill-current" />
+                          <Circle
+                            size={14}
+                            className={cn('fill-current', opt.color)}
+                          />
                           {opt.label}
                         </span>
                       </SelectItem>

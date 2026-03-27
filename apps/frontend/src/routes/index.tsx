@@ -64,7 +64,7 @@ function LandingPage() {
     <main className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-lg px-6 pb-24 pt-20 text-center md:pb-32 md:pt-28">
+        <div className="mx-auto max-w-xl px-6 pb-24 pt-20 text-center md:pb-32 md:pt-28">
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-(--border-color) px-2.5 py-1">
             <span className="size-2 animate-pulse rounded-full bg-accent-500" />
@@ -166,7 +166,7 @@ function LandingPage() {
 
       {/* CTA Section */}
       <section className="py-24">
-        <div className="mx-auto max-w-4xl px-6 text-center">
+        <div className="mx-auto max-w-5xl px-6 text-center">
           <h2 className="text-2xl font-medium tracking-tight text-(--text-primary) md:text-4xl">
             Ready to get organized?
           </h2>

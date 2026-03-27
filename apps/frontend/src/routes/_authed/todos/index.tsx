@@ -62,6 +62,7 @@ import {
   type LucideIcon,
   Settings,
   ChevronRight,
+  FolderOpen,
 } from 'lucide-react'
 import { useState, useMemo, useCallback } from 'react'
 import { useUser } from '@clerk/clerk-react'
@@ -313,7 +314,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className="mx-auto max-w-5xl px-6 py-8">
         {/* Welcome Section */}
         <div className="mb-8 flex items-start justify-between">
           <div>
@@ -326,10 +327,18 @@ function Dashboard() {
                 : 'All caught up! Time to relax.'}
             </p>
           </div>
-          <Button onClick={() => setShowCreateWizard(true)} size="default">
-            <Plus size={18} />
-            New Task
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link to="/categories">
+              <Button variant="outline" size="default">
+                <FolderOpen size={18} />
+                Categories
+              </Button>
+            </Link>
+            <Button onClick={() => setShowCreateWizard(true)} size="default">
+              <Plus size={18} />
+              New Task
+            </Button>
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -631,29 +640,33 @@ function Dashboard() {
         onClose={() => setShowCreateWizard(false)}
       />
 
+      {/* Edit Todo Modal - hide when delete dialog is open to prevent stacking */}
       <TodoForm
-        isOpen={!!editingTodo}
+        isOpen={!!editingTodo && !todoToDelete}
         onClose={() => setEditingTodo(null)}
         onSubmit={handleUpdateTodo}
         todo={editingTodo}
         isLoading={updateTodo.isPending}
       />
 
+      {/* Todo Detail Modal - hide when delete dialog is open */}
       <TodoDetail
         todo={selectedTodo}
-        isOpen={!!selectedTodo}
+        isOpen={!!selectedTodo && !todoToDelete}
         onClose={() => setSelectedTodo(null)}
       />
 
+      {/* Create Category Modal - hide when delete dialog is open */}
       <CategoryForm
-        isOpen={showCategoryForm}
+        isOpen={showCategoryForm && !categoryToDelete}
         onClose={() => setShowCategoryForm(false)}
         onSubmit={handleCreateCategory}
         isLoading={createCategory.isPending}
       />
 
+      {/* Edit Category Modal - hide when delete dialog is open */}
       <CategoryForm
-        isOpen={!!editingCategory}
+        isOpen={!!editingCategory && !categoryToDelete}
         onClose={() => setEditingCategory(null)}
         onSubmit={handleUpdateCategory}
         category={editingCategory}

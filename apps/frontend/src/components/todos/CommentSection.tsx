@@ -194,7 +194,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                 /* View mode */
                 <>
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm whitespace-pre-wrap">
+                    <p className="text-sm whitespace-pre-wrap break-words min-w-0 flex-1">
                       {comment.content}
                     </p>
                     <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">

@@ -57,15 +57,16 @@ export default function TodoDetail({ todo, isOpen, onClose }: TodoDetailProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-lg max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <div className="flex items-start justify-between gap-4 pr-6">
+          <div className="flex items-center justify-between gap-4 pr-8">
             <DialogTitle className="text-left">{todo.title}</DialogTitle>
             <Link
               to="/todos/$todoId"
               params={{ todoId: todo.id }}
               onClick={onClose}
             >
-              <Button variant="ghost" size="icon-sm">
+              <Button variant="outline" size="sm">
                 <ExternalLink size={14} />
+                Open
               </Button>
             </Link>
           </div>

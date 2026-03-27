@@ -144,7 +144,7 @@ function TodoPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <main className="mx-auto max-w-3xl px-6 py-8">
+        <main className="mx-auto max-w-5xl px-6 py-8">
           <Skeleton className="h-8 w-32 mb-8" />
           <Skeleton className="h-12 w-3/4 mb-4" />
           <div className="flex gap-2 mb-6">
@@ -162,7 +162,7 @@ function TodoPage() {
   if (error || !todo) {
     return (
       <div className="min-h-screen bg-background">
-        <main className="mx-auto max-w-3xl px-6 py-8">
+        <main className="mx-auto max-w-5xl px-6 py-8">
           <Link
             to="/todos"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
@@ -192,7 +192,7 @@ function TodoPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <main className="mx-auto max-w-3xl px-6 py-8">
+      <main className="mx-auto max-w-5xl px-6 py-8">
         {/* Back button */}
         <Link
           to="/todos"
@@ -354,9 +354,9 @@ function TodoPage() {
         </div>
       </main>
 
-      {/* Edit modal */}
+      {/* Edit modal - hide when delete dialog is open to prevent stacking */}
       <TodoForm
-        isOpen={showEditForm}
+        isOpen={showEditForm && !showDeleteDialog}
         onClose={() => setShowEditForm(false)}
         onSubmit={handleUpdateTodo}
         todo={todo}

@@ -279,8 +279,8 @@ export default function AttachmentSection({
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
                   <Icon className="h-5 w-5 text-primary" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <p className="text-sm font-medium truncate break-all">
                     {attachment.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -341,9 +341,10 @@ export default function AttachmentSection({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Attachment</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{attachmentToDelete?.name}"? This
-              action cannot be undone.
+            <AlertDialogDescription className="break-words">
+              Are you sure you want to delete "
+              <span className="break-all">{attachmentToDelete?.name}</span>"?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
