@@ -8,7 +8,6 @@ import {
   useAuth,
   UserButton,
 } from '@clerk/clerk-react'
-import { CheckSquare } from 'lucide-react'
 
 export default function Header() {
   const { isLoaded } = useAuth()

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { Github, Twitter } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { GithubIcon, NewTwitterIcon } from '@hugeicons/core-free-icons'
 import { Button } from './ui/button'
 
 export default function Footer() {
@@ -29,7 +30,7 @@ export default function Footer() {
               aria-label="GitHub"
             >
               <Button variant={'ghost'} size="icon">
-                <Github size={16} />
+                <HugeiconsIcon icon={GithubIcon} size={16} />
               </Button>
             </a>
             <a
@@ -39,7 +40,7 @@ export default function Footer() {
               aria-label="Twitter"
             >
               <Button variant={'ghost'} size="icon">
-                <Twitter size={16} />
+                <HugeiconsIcon icon={NewTwitterIcon} size={16} />
               </Button>
             </a>
           </div>

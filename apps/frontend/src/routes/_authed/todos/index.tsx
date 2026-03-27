@@ -47,23 +47,23 @@ import {
   type TUpdateCategoryPayload,
 } from '#/api/hooks/category'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Plus,
+  Add01Icon,
   ListTodo,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  FolderPlus,
-  Inbox,
-  Trash2,
-  Pencil,
-  Archive,
-  Flag,
-  type LucideIcon,
-  Settings,
-  ChevronRight,
-  FolderOpen,
-} from 'lucide-react'
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  AlertCircleIcon,
+  FolderAddIcon,
+  InboxIcon,
+  Delete01Icon,
+  Edit01Icon,
+  Archive01Icon,
+  Flag01Icon,
+  Settings01Icon,
+  ArrowRight01Icon,
+  FolderOpenIcon,
+} from '@hugeicons/core-free-icons'
 import { useState, useMemo, useCallback } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import type { PopulatedTodo, TodoCategory } from '@tareas/zod'
@@ -258,7 +258,7 @@ function Dashboard() {
   // Quick filters configuration
   const quickFilters: Array<{
     label: string
-    icon: LucideIcon
+    icon: typeof InboxIcon
     filter: TodoSearchParams
     isActive: () => boolean
     count?: number
@@ -266,7 +266,7 @@ function Dashboard() {
   }> = [
     {
       label: 'All Tasks',
-      icon: Inbox,
+      icon: InboxIcon,
       filter: {},
       isActive: () =>
         !filters.status && !filters.priority && !filters.categoryId,
@@ -274,7 +274,7 @@ function Dashboard() {
     },
     {
       label: 'Active',
-      icon: Clock,
+      icon: Clock01Icon,
       filter: { status: 'active' },
       isActive: () => filters.status === 'active',
       count: stats?.active,
@@ -282,7 +282,7 @@ function Dashboard() {
     },
     {
       label: 'Completed',
-      icon: CheckCircle2,
+      icon: CheckmarkCircle02Icon,
       filter: { status: 'completed' },
       isActive: () => filters.status === 'completed',
       count: stats?.completed,
@@ -290,14 +290,14 @@ function Dashboard() {
     },
     {
       label: 'High Priority',
-      icon: Flag,
+      icon: Flag01Icon,
       filter: { priority: 'high' },
       isActive: () => filters.priority === 'high',
       color: 'text-red-500',
     },
     {
       label: 'Overdue',
-      icon: AlertTriangle,
+      icon: AlertCircleIcon,
       filter: {}, // We'll filter client-side or add API support
       isActive: () => false, // Placeholder
       count: stats?.overdue,
@@ -305,7 +305,7 @@ function Dashboard() {
     },
     {
       label: 'Archived',
-      icon: Archive,
+      icon: Archive01Icon,
       filter: { status: 'archived' },
       isActive: () => filters.status === 'archived',
       count: stats?.archived,
@@ -313,8 +313,8 @@ function Dashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="mx-auto max-w-5xl px-6 py-8">
+    <div className="min-h-screen bg-background px-6">
+      <main className="mx-auto max-w-5xl py-8">
         {/* Welcome Section */}
         <div className="mb-8 flex items-start justify-between">
           <div>
@@ -330,12 +330,12 @@ function Dashboard() {
           <div className="flex items-center gap-2">
             <Link to="/categories">
               <Button variant="outline" size="default">
-                <FolderOpen size={18} />
+                <HugeiconsIcon icon={FolderOpenIcon} size={18} />
                 Categories
               </Button>
             </Link>
             <Button onClick={() => setShowCreateWizard(true)} size="default">
-              <Plus size={18} />
+              <HugeiconsIcon icon={Add01Icon} size={18} />
               New Task
             </Button>
           </div>
@@ -357,19 +357,19 @@ function Dashboard() {
               <StatsCard
                 label="Completed"
                 value={stats?.completed ?? 0}
-                icon={CheckCircle2}
+                icon={CheckmarkCircle02Icon}
                 color="text-green-500"
               />
               <StatsCard
                 label="Pending"
                 value={pendingCount}
-                icon={Clock}
+                icon={Clock01Icon}
                 color="text-blue-500"
               />
               <StatsCard
                 label="Overdue"
                 value={stats?.overdue ?? 0}
-                icon={AlertTriangle}
+                icon={AlertCircleIcon}
                 color="text-destructive"
               />
             </>
@@ -387,7 +387,6 @@ function Dashboard() {
               </div>
               <div className="p-2">
                 {quickFilters.map((qf) => {
-                  const Icon = qf.icon
                   const active = qf.isActive()
                   return (
                     <button
@@ -403,7 +402,11 @@ function Dashboard() {
                       )}
                     >
                       <span className="flex items-center gap-3">
-                        <Icon size={16} className={cn(!active && qf.color)} />
+                        <HugeiconsIcon
+                          icon={qf.icon}
+                          size={16}
+                          className={cn(!active && qf.color)}
+                        />
                         {qf.label}
                       </span>
                       {qf.count !== undefined && (
@@ -432,7 +435,7 @@ function Dashboard() {
                         variant="ghost"
                         onClick={() => setShowCategoryForm(true)}
                       >
-                        <FolderPlus size={16} />
+                        <HugeiconsIcon icon={FolderAddIcon} size={16} />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Add category</TooltipContent>
@@ -441,7 +444,7 @@ function Dashboard() {
                     <TooltipTrigger>
                       <Link to="/categories">
                         <Button size="icon-sm" variant="ghost">
-                          <Settings size={16} />
+                          <HugeiconsIcon icon={Settings01Icon} size={16} />
                         </Button>
                       </Link>
                     </TooltipTrigger>
@@ -460,7 +463,7 @@ function Dashboard() {
                     variant="outline"
                     onClick={() => setShowCategoryForm(true)}
                   >
-                    <Plus size={14} />
+                    <HugeiconsIcon icon={Add01Icon} size={14} />
                     Create Category
                   </Button>
                 </div>
@@ -507,7 +510,8 @@ function Dashboard() {
                                 {taskCount}
                               </Badge>
                             )}
-                            <ChevronRight
+                            <HugeiconsIcon
+                              icon={ArrowRight01Icon}
                               size={14}
                               className={cn(
                                 'text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity',
@@ -520,14 +524,14 @@ function Dashboard() {
                           <ContextMenuItem
                             onClick={() => setEditingCategory(cat)}
                           >
-                            <Pencil size={14} />
+                            <HugeiconsIcon icon={Edit01Icon} size={14} />
                             Edit
                           </ContextMenuItem>
                           <ContextMenuItem
                             variant="destructive"
                             onClick={() => setCategoryToDelete(cat)}
                           >
-                            <Trash2 size={14} />
+                            <HugeiconsIcon icon={Delete01Icon} size={14} />
                             Delete
                           </ContextMenuItem>
                         </ContextMenuContent>
@@ -558,7 +562,7 @@ function Dashboard() {
                   variant="outline"
                   onClick={() => setShowCreateWizard(true)}
                 >
-                  <Plus size={16} />
+                  <HugeiconsIcon icon={Add01Icon} size={16} />
                   Add Task
                 </Button>
               </div>
@@ -583,7 +587,10 @@ function Dashboard() {
               ) : todos.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center px-6">
                   <div className="rounded-full bg-muted p-4 mb-4">
-                    <Inbox className="h-8 w-8 text-muted-foreground" />
+                    <HugeiconsIcon
+                      icon={InboxIcon}
+                      className="h-8 w-8 text-muted-foreground"
+                    />
                   </div>
                   <h3 className="text-base font-medium mb-1">No tasks found</h3>
                   <p className="text-sm text-muted-foreground mb-4 max-w-sm">
@@ -599,7 +606,7 @@ function Dashboard() {
                     !filters.priority &&
                     !filters.categoryId && (
                       <Button onClick={() => setShowCreateWizard(true)}>
-                        <Plus size={16} />
+                        <HugeiconsIcon icon={Add01Icon} size={16} />
                         Create Your First Task
                       </Button>
                     )}

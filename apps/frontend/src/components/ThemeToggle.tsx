@@ -1,4 +1,5 @@
-import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ComputerIcon, MoonIcon, Sun01Icon } from '@hugeicons/core-free-icons'
 import { useEffect, useState } from 'react'
 import { Button } from '#/components/ui/button'
 
@@ -79,11 +80,23 @@ export default function ThemeToggle() {
       title={label}
     >
       {mode === 'auto' ? (
-        <MonitorIcon size={16} className="text-muted-foreground" />
+        <HugeiconsIcon
+          icon={ComputerIcon}
+          size={16}
+          className="text-muted-foreground"
+        />
       ) : mode === 'dark' ? (
-        <MoonIcon size={16} className="text-muted-foreground" />
+        <HugeiconsIcon
+          icon={MoonIcon}
+          size={16}
+          className="text-muted-foreground"
+        />
       ) : (
-        <SunIcon size={16} className="text-muted-foreground" />
+        <HugeiconsIcon
+          icon={Sun01Icon}
+          size={16}
+          className="text-muted-foreground"
+        />
       )}
     </Button>
   )

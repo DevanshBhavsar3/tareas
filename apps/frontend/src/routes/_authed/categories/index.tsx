@@ -35,15 +35,17 @@ import {
   type TUpdateCategoryPayload,
 } from '#/api/hooks/category'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Plus,
-  FolderOpen,
-  MoreHorizontal,
-  Pencil,
-  Trash2,
-  Search,
-  Tag,
-} from 'lucide-react'
+  Add01Icon,
+  FolderOpenIcon,
+  MoreHorizontalIcon,
+  Edit01Icon,
+  Delete01Icon,
+  Search01Icon,
+  Tag01Icon,
+  ChevronRight,
+} from '@hugeicons/core-free-icons'
 import { useState } from 'react'
 import type { TodoCategory } from '@tareas/zod'
 import type z from 'zod'
@@ -118,8 +120,8 @@ function CategoriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="mx-auto max-w-5xl px-6 py-8">
+    <div className="min-h-screen bg-background px-6 ">
+      <main className="mx-auto max-w-5xl py-8">
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
@@ -129,14 +131,15 @@ function CategoriesPage() {
             </p>
           </div>
           <Button onClick={() => setShowCategoryForm(true)}>
-            <Plus size={16} />
+            <HugeiconsIcon icon={Add01Icon} size={16} />
             New Category
           </Button>
         </div>
 
         {/* Search */}
         <div className="relative mb-6">
-          <Search
+          <HugeiconsIcon
+            icon={Search01Icon}
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
@@ -160,7 +163,10 @@ function CategoriesPage() {
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <div className="rounded-full bg-muted p-4 mb-4">
-                <FolderOpen className="h-8 w-8 text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={FolderOpenIcon}
+                  className="h-8 w-8 text-muted-foreground"
+                />
               </div>
               <h3 className="text-lg font-medium mb-1">No categories yet</h3>
               <p className="text-sm text-muted-foreground mb-4 max-w-sm">
@@ -170,7 +176,7 @@ function CategoriesPage() {
               </p>
               {!searchQuery && (
                 <Button onClick={() => setShowCategoryForm(true)}>
-                  <Plus size={16} />
+                  <HugeiconsIcon icon={Add01Icon} size={16} />
                   Create Category
                 </Button>
               )}
@@ -183,12 +189,6 @@ function CategoriesPage() {
                 key={category.id}
                 className="group relative overflow-hidden transition-all hover:shadow-md hover:border-primary/20"
               >
-                {/* Color indicator */}
-                <div
-                  className="absolute top-0 left-0 right-0 h-1"
-                  style={{ backgroundColor: category.color }}
-                />
-
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -199,7 +199,7 @@ function CategoriesPage() {
                           color: category.color,
                         }}
                       >
-                        <Tag size={20} />
+                        <HugeiconsIcon icon={Tag01Icon} size={20} />
                       </div>
                       <div>
                         <CardTitle className="text-base">
@@ -219,13 +219,13 @@ function CategoriesPage() {
                           />
                         }
                       >
-                        <MoreHorizontal size={16} />
+                        <HugeiconsIcon icon={MoreHorizontalIcon} size={16} />
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           onClick={() => setEditingCategory(category)}
                         >
-                          <Pencil size={14} />
+                          <HugeiconsIcon icon={Edit01Icon} size={14} />
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
@@ -233,7 +233,7 @@ function CategoriesPage() {
                           variant="destructive"
                           onClick={() => setCategoryToDelete(category)}
                         >
-                          <Trash2 size={14} />
+                          <HugeiconsIcon icon={Delete01Icon} size={14} />
                           Delete
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -257,8 +257,8 @@ function CategoriesPage() {
                     search={{ categoryId: category.id }}
                     className="mt-4 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
                   >
-                    View tasks
-                    <span aria-hidden="true">&rarr;</span>
+                    Related tasks
+                    <HugeiconsIcon icon={ChevronRight} size={16} />
                   </Link>
                 </CardContent>
               </Card>

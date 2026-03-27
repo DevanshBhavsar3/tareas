@@ -30,7 +30,12 @@ import type {
 } from '@tareas/zod'
 import { useState, useEffect, useMemo } from 'react'
 import type z from 'zod'
-import { CalendarIcon, Flag, Circle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Calendar01Icon,
+  Flag01Icon,
+  RecordIcon,
+} from '@hugeicons/core-free-icons'
 import { cn } from '#/lib/utils'
 import { formatPPP } from '#/lib/dayjs'
 
@@ -199,7 +204,8 @@ export default function TodoForm({
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select priority">
                     <span className="flex items-center gap-2">
-                      <Flag
+                      <HugeiconsIcon
+                        icon={Flag01Icon}
                         size={14}
                         className={
                           priorityOptions.find((p) => p.value === priority)
@@ -214,7 +220,11 @@ export default function TodoForm({
                   {priorityOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       <span className="flex items-center gap-2">
-                        <Flag size={14} className={opt.color} />
+                        <HugeiconsIcon
+                          icon={Flag01Icon}
+                          size={14}
+                          className={opt.color}
+                        />
                         {opt.label}
                       </span>
                     </SelectItem>
@@ -233,7 +243,8 @@ export default function TodoForm({
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select status">
                       <span className="flex items-center gap-2">
-                        <Circle
+                        <HugeiconsIcon
+                          icon={RecordIcon}
                           size={14}
                           className={cn(
                             'fill-current',
@@ -249,7 +260,8 @@ export default function TodoForm({
                     {statusOptions.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         <span className="flex items-center gap-2">
-                          <Circle
+                          <HugeiconsIcon
+                            icon={RecordIcon}
                             size={14}
                             className={cn('fill-current', opt.color)}
                           />
@@ -277,7 +289,10 @@ export default function TodoForm({
                       />
                     }
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <HugeiconsIcon
+                      icon={Calendar01Icon}
+                      className="mr-2 h-4 w-4"
+                    />
                     {dueDate ? formatPPP(dueDate) : 'Pick a date'}
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -308,7 +323,10 @@ export default function TodoForm({
                     />
                   }
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon
+                    icon={Calendar01Icon}
+                    className="mr-2 h-4 w-4"
+                  />
                   {dueDate ? formatPPP(dueDate) : 'Pick a date'}
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">

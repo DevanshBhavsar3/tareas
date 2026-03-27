@@ -20,17 +20,18 @@ import {
   isDueToday,
 } from '#/lib/dayjs'
 import type { PopulatedTodo } from '@tareas/zod'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Calendar,
-  MessageSquare,
-  MoreHorizontal,
-  Trash2,
-  Pencil,
-  Paperclip,
-  ExternalLink,
-  Flag,
-  AlertCircle,
-} from 'lucide-react'
+  Calendar01Icon,
+  Comment01Icon,
+  MoreHorizontalIcon,
+  Delete01Icon,
+  Edit01Icon,
+  AttachmentIcon,
+  LinkSquare02Icon,
+  Flag01Icon,
+  AlertCircleIcon,
+} from '@hugeicons/core-free-icons'
 import { Link } from '@tanstack/react-router'
 import type z from 'zod'
 
@@ -126,7 +127,11 @@ export default function TodoItem({
           {todo.priority === 'high' && !isCompleted && (
             <Tooltip>
               <TooltipTrigger>
-                <Flag size={14} className="text-red-500 shrink-0 mt-0.5" />
+                <HugeiconsIcon
+                  icon={Flag01Icon}
+                  size={14}
+                  className="text-red-500 shrink-0 mt-0.5"
+                />
               </TooltipTrigger>
               <TooltipContent>High Priority</TooltipContent>
             </Tooltip>
@@ -136,7 +141,8 @@ export default function TodoItem({
           {overdue && !isCompleted && (
             <Tooltip>
               <TooltipTrigger>
-                <AlertCircle
+                <HugeiconsIcon
+                  icon={AlertCircleIcon}
                   size={14}
                   className="text-destructive shrink-0 mt-0.5"
                 />
@@ -182,7 +188,7 @@ export default function TodoItem({
                     : 'text-muted-foreground',
               )}
             >
-              <Calendar size={12} />
+              <HugeiconsIcon icon={Calendar01Icon} size={12} />
               {dueDateText}
             </span>
           )}
@@ -190,7 +196,7 @@ export default function TodoItem({
           {/* Comments count */}
           {hasComments && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MessageSquare size={12} />
+              <HugeiconsIcon icon={Comment01Icon} size={12} />
               {todo.comments!.length}
             </span>
           )}
@@ -198,7 +204,7 @@ export default function TodoItem({
           {/* Attachments count */}
           {hasAttachments && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Paperclip size={12} />
+              <HugeiconsIcon icon={AttachmentIcon} size={12} />
               {todo.attachments!.length}
             </span>
           )}
@@ -214,7 +220,7 @@ export default function TodoItem({
           <TooltipTrigger>
             <Link to="/todos/$todoId" params={{ todoId: todo.id }}>
               <Button variant="ghost" size="icon-sm">
-                <ExternalLink size={14} />
+                <HugeiconsIcon icon={LinkSquare02Icon} size={14} />
               </Button>
             </Link>
           </TooltipTrigger>
@@ -225,11 +231,11 @@ export default function TodoItem({
           <DropdownMenuTrigger
             render={<Button variant="ghost" size="icon-sm" />}
           >
-            <MoreHorizontal size={16} />
+            <HugeiconsIcon icon={MoreHorizontalIcon} size={16} />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onEdit(todo)}>
-              <Pencil size={14} />
+              <HugeiconsIcon icon={Edit01Icon} size={14} />
               Edit
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -237,7 +243,7 @@ export default function TodoItem({
               variant="destructive"
               onClick={() => onDelete(todo.id)}
             >
-              <Trash2 size={14} />
+              <HugeiconsIcon icon={Delete01Icon} size={14} />
               Delete
             </DropdownMenuItem>
           </DropdownMenuContent>

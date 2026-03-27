@@ -1,17 +1,17 @@
 import { Card, CardContent } from '#/components/ui/card'
-import type { LucideIcon } from 'lucide-react'
+import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 
 type StatsCardProps = {
   label: string
   value: number
-  icon: LucideIcon
+  icon: IconSvgElement
   color?: string
 }
 
 export default function StatsCard({
   label,
   value,
-  icon: Icon,
+  icon,
   color = 'text-primary',
 }: StatsCardProps) {
   return (
@@ -20,7 +20,7 @@ export default function StatsCard({
       <div
         className={`absolute -right-4 -top-4 ${color} opacity-10 transition-all group-hover:opacity-15 group-hover:scale-110`}
       >
-        <Icon size={72} strokeWidth={1} />
+        <HugeiconsIcon icon={icon} size={72} strokeWidth={1} />
       </div>
 
       <CardContent className="relative pt-5">

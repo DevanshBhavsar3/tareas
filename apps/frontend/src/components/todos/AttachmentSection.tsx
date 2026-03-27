@@ -25,17 +25,18 @@ import {
 import { Skeleton } from '#/components/ui/skeleton'
 import { cn } from '#/lib/utils'
 import type { TodoAttachment, PopulatedTodo } from '@tareas/zod'
+import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react'
 import {
-  Upload,
-  Trash2,
-  Download,
-  FileText,
-  Image,
-  FileArchive,
-  File,
-  Loader2,
-  Paperclip,
-} from 'lucide-react'
+  Upload01Icon,
+  Delete01Icon,
+  Download01Icon,
+  FileTypeIcon,
+  Image01Icon,
+  FileArchiveIcon,
+  File01Icon,
+  Loading01Icon,
+  AttachmentIcon,
+} from '@hugeicons/core-free-icons'
 import type z from 'zod'
 import { useState, useRef, useCallback } from 'react'
 import { toast } from 'sonner'
@@ -52,13 +53,14 @@ type AttachmentSectionProps = {
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
-const getFileIcon = (mimeType: string | null) => {
-  if (!mimeType) return File
-  if (mimeType.startsWith('image/')) return Image
-  if (mimeType.includes('pdf') || mimeType.includes('document')) return FileText
+const getFileIcon = (mimeType: string | null): IconSvgElement => {
+  if (!mimeType) return File01Icon
+  if (mimeType.startsWith('image/')) return Image01Icon
+  if (mimeType.includes('pdf') || mimeType.includes('document'))
+    return FileTypeIcon
   if (mimeType.includes('zip') || mimeType.includes('archive'))
-    return FileArchive
-  return File
+    return FileArchiveIcon
+  return File01Icon
 }
 
 const formatFileSize = (bytes: bigint | null): string => {
@@ -242,7 +244,10 @@ export default function AttachmentSection({
         <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
           {uploadProgress !== null ? (
             <div className="w-full space-y-2">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+              <HugeiconsIcon
+                icon={Loading01Icon}
+                className="h-8 w-8 animate-spin text-primary mx-auto"
+              />
               <Progress
                 value={uploadProgress}
                 className="w-full max-w-xs mx-auto"
@@ -251,7 +256,10 @@ export default function AttachmentSection({
             </div>
           ) : (
             <>
-              <Upload className="h-8 w-8 text-muted-foreground/50 mb-2" />
+              <HugeiconsIcon
+                icon={Upload01Icon}
+                className="h-8 w-8 text-muted-foreground/50 mb-2"
+              />
               <p className="text-sm text-muted-foreground">
                 <span className="font-medium text-primary">
                   Click to upload
@@ -270,17 +278,20 @@ export default function AttachmentSection({
       {attachments.length > 0 && (
         <div className="space-y-2">
           {attachments.map((attachment) => {
-            const Icon = getFileIcon(attachment.mimeType)
+            const fileIcon = getFileIcon(attachment.mimeType)
             return (
               <div
                 key={attachment.id}
                 className="group flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-colors hover:bg-muted/50"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <Icon className="h-5 w-5 text-primary" />
+                  <HugeiconsIcon
+                    icon={fileIcon}
+                    className="h-5 w-5 text-primary"
+                  />
                 </div>
                 <div className="flex-1 min-w-0 overflow-hidden">
-                  <p className="text-sm font-medium truncate break-all">
+                  <p className="text-sm font-medium truncate break-all max-w-xs">
                     {attachment.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -297,9 +308,15 @@ export default function AttachmentSection({
                         disabled={getAttachmentURL.isPending}
                       >
                         {getAttachmentURL.isPending ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <HugeiconsIcon
+                            icon={Loading01Icon}
+                            className="h-4 w-4 animate-spin"
+                          />
                         ) : (
-                          <Download className="h-4 w-4" />
+                          <HugeiconsIcon
+                            icon={Download01Icon}
+                            className="h-4 w-4"
+                          />
                         )}
                       </Button>
                     </TooltipTrigger>
@@ -313,7 +330,10 @@ export default function AttachmentSection({
                         className="text-destructive hover:text-destructive"
                         onClick={() => setAttachmentToDelete(attachment)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <HugeiconsIcon
+                          icon={Delete01Icon}
+                          className="h-4 w-4"
+                        />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Delete</TooltipContent>
@@ -328,7 +348,10 @@ export default function AttachmentSection({
       {/* Empty state */}
       {attachments.length === 0 && uploadProgress === null && (
         <div className="flex flex-col items-center justify-center py-4 text-center">
-          <Paperclip className="h-8 w-8 text-muted-foreground/30 mb-2" />
+          <HugeiconsIcon
+            icon={AttachmentIcon}
+            className="h-8 w-8 text-muted-foreground/30 mb-2"
+          />
           <p className="text-sm text-muted-foreground">No attachments yet</p>
         </div>
       )}

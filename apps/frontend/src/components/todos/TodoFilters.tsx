@@ -8,7 +8,13 @@ import {
 import { Input } from '#/components/ui/input'
 import { Button } from '#/components/ui/button'
 import { useGetAllCategories } from '#/api/hooks/category'
-import { Search, X, Flag, Circle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Search01Icon,
+  Cancel01Icon,
+  Flag01Icon,
+  CircleIcon,
+} from '@hugeicons/core-free-icons'
 import { useMemo } from 'react'
 
 type Filters = {
@@ -74,7 +80,8 @@ export default function TodoFilters({
     <div className="flex flex-col flex-wrap items-center gap-3">
       {/* Search */}
       <div className="relative flex-1 w-full">
-        <Search
+        <HugeiconsIcon
+          icon={Search01Icon}
           size={16}
           className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
         />
@@ -104,7 +111,11 @@ export default function TodoFilters({
             <SelectValue placeholder="Status">
               {filters.status ? (
                 <span className="flex items-center gap-2">
-                  <Circle size={12} className="fill-current" />
+                  <HugeiconsIcon
+                    icon={CircleIcon}
+                    size={12}
+                    className="fill-current"
+                  />
                   {selectedStatusLabel}
                 </span>
               ) : (
@@ -117,7 +128,11 @@ export default function TodoFilters({
             {statusOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 <span className="flex items-center gap-2">
-                  <Circle size={12} className="fill-current" />
+                  <HugeiconsIcon
+                    icon={CircleIcon}
+                    size={12}
+                    className="fill-current"
+                  />
                   {opt.label}
                 </span>
               </SelectItem>
@@ -139,7 +154,11 @@ export default function TodoFilters({
             <SelectValue placeholder="Priority">
               {selectedPriority ? (
                 <span className="flex items-center gap-2">
-                  <Flag size={12} className={selectedPriority.color} />
+                  <HugeiconsIcon
+                    icon={Flag01Icon}
+                    size={12}
+                    className={selectedPriority.color}
+                  />
                   {selectedPriority.label}
                 </span>
               ) : (
@@ -152,7 +171,11 @@ export default function TodoFilters({
             {priorityOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value}>
                 <span className="flex items-center gap-2">
-                  <Flag size={12} className={opt.color} />
+                  <HugeiconsIcon
+                    icon={Flag01Icon}
+                    size={12}
+                    className={opt.color}
+                  />
                   {opt.label}
                 </span>
               </SelectItem>
@@ -209,7 +232,7 @@ export default function TodoFilters({
             onClick={clearFilters}
             className="flex items-center gap-1.5"
           >
-            <X size={14} />
+            <HugeiconsIcon icon={Cancel01Icon} size={14} />
             Clear
           </Button>
         )}

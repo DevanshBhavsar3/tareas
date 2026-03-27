@@ -96,13 +96,17 @@ func (r *TodoRepository) GetTodoByID(ctx context.Context, userID string, payload
 				'[]'::JSONB
 			) as children,
 			COALESCE (
-				jsonb_agg(
-					to_jsonb(camel(tcomment))
-					ORDER BY
-						tcomment.created_at ASC
-				) FILTER (
-					WHERE
-						tcomment.id IS NOT NULL
+				(
+					SELECT 
+						jsonb_agg(a.obj ORDER BY a.created_at ASC)
+					FROM (
+						SELECT DISTINCT ON (tc.id)
+							tc.created_at,
+							to_jsonb(camel(tc)) AS obj
+						FROM todo_comments tc
+						WHERE tc.todo_id = t.id
+						ORDER BY tc.id, tc.created_at ASC
+					) a
 				),
 				'[]'::JSONB
 			) as comments,
@@ -124,8 +128,6 @@ func (r *TodoRepository) GetTodoByID(ctx context.Context, userID string, payload
 		FROM todos t
 			LEFT JOIN todo_categories c ON c.id = t.category_id AND c.user_id=@user_id
 			LEFT JOIN todos child ON child.parent_todo_id = t.id AND child.user_id=@user_id
-			LEFT JOIN todo_comments tcomment ON tcomment.todo_id = t.id AND tcomment.user_id=@user_id
-			LEFT JOIN todo_attachments tattachment ON tattachment.todo_id = t.id
 		WHERE 
 			t.id = @id AND t.user_id = @user_id
 		GROUP BY
@@ -195,13 +197,17 @@ func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *t
 				'[]'::JSONB
 			) as children,
 			COALESCE (
-				jsonb_agg(
-					to_jsonb(camel(tcomment))
-					ORDER BY
-						tcomment.created_at ASC
-				) FILTER (
-					WHERE
-						tcomment.id IS NOT NULL
+				(
+					SELECT 
+						jsonb_agg(a.obj ORDER BY a.created_at ASC)
+					FROM (
+						SELECT DISTINCT ON (tc.id)
+							tc.created_at,
+							to_jsonb(camel(tc)) AS obj
+						FROM todo_comments tc
+						WHERE tc.todo_id = t.id
+						ORDER BY tc.id, tc.created_at ASC
+					) a
 				),
 				'[]'::JSONB
 			) as comments,
@@ -223,8 +229,6 @@ func (r *TodoRepository) GetTodos(ctx context.Context, userID string, payload *t
 		FROM todos t
 			LEFT JOIN todo_categories c ON c.id = t.category_id AND c.user_id=@user_id
 			LEFT JOIN todos child ON child.parent_todo_id = t.id AND child.user_id=@user_id
-			LEFT JOIN todo_comments tcomment ON tcomment.todo_id = t.id AND tcomment.user_id=@user_id
-			LEFT JOIN todo_attachments tattachment ON tattachment.todo_id = t.id
 	`
 
 	args := pgx.NamedArgs{

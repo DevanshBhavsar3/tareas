@@ -7,7 +7,15 @@ import {
 import { Textarea } from '#/components/ui/textarea'
 import { Button } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
-import { Send, Trash2, Pencil, X, Check, Loader2 } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  SentIcon,
+  Delete01Icon,
+  Edit01Icon,
+  Cancel01Icon,
+  Loading01Icon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
 import { useState, useRef, useCallback } from 'react'
 import { formatRelativeTime } from '#/lib/dayjs'
 
@@ -138,9 +146,13 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
             disabled={!newComment.trim() || addComment.isPending}
           >
             {addComment.isPending ? (
-              <Loader2 size={14} className="animate-spin" />
+              <HugeiconsIcon
+                icon={Loading01Icon}
+                size={14}
+                className="animate-spin"
+              />
             ) : (
-              <Send size={14} />
+              <HugeiconsIcon icon={SentIcon} size={14} />
             )}
             Add
           </Button>
@@ -173,7 +185,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                       onClick={handleCancelEdit}
                       disabled={updateComment.isPending}
                     >
-                      <X size={14} />
+                      <HugeiconsIcon icon={Cancel01Icon} size={14} />
                       Cancel
                     </Button>
                     <Button
@@ -182,9 +194,13 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                       disabled={!editContent.trim() || updateComment.isPending}
                     >
                       {updateComment.isPending ? (
-                        <Loader2 size={14} className="animate-spin" />
+                        <HugeiconsIcon
+                          icon={Loading01Icon}
+                          size={14}
+                          className="animate-spin"
+                        />
                       ) : (
-                        <Check size={14} />
+                        <HugeiconsIcon icon={Tick02Icon} size={14} />
                       )}
                       Save
                     </Button>
@@ -194,7 +210,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                 /* View mode */
                 <>
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm whitespace-pre-wrap break-words min-w-0 flex-1">
+                    <p className="text-sm whitespace-pre-wrap wrap-break-words min-w-0 flex-1">
                       {comment.content}
                     </p>
                     <div className="flex shrink-0 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -205,7 +221,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                           handleStartEdit(comment.id, comment.content)
                         }
                       >
-                        <Pencil size={14} />
+                        <HugeiconsIcon icon={Edit01Icon} size={14} />
                       </Button>
                       <Button
                         variant="ghost"
@@ -214,7 +230,7 @@ export default function CommentSection({ todoId }: CommentSectionProps) {
                         onClick={() => handleDelete(comment.id)}
                         disabled={deleteComment.isPending}
                       >
-                        <Trash2 size={14} />
+                        <HugeiconsIcon icon={Delete01Icon} size={14} />
                       </Button>
                     </div>
                   </div>

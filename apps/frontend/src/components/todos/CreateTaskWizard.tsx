@@ -30,14 +30,15 @@ import { AttachmentSection } from '#/components/todos'
 import type { PopulatedTodo } from '@tareas/zod'
 import { useState, useMemo, useCallback } from 'react'
 import type z from 'zod'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  CalendarIcon,
-  Flag,
-  ArrowRight,
-  Check,
-  Paperclip,
-  Loader2,
-} from 'lucide-react'
+  Calendar01Icon,
+  Flag01Icon,
+  ArrowRight01Icon,
+  AttachmentIcon,
+  Loading01Icon,
+  Tick02Icon,
+} from '@hugeicons/core-free-icons'
 import { cn } from '#/lib/utils'
 import { formatPPP } from '#/lib/dayjs'
 import { toast } from 'sonner'
@@ -222,7 +223,8 @@ export default function CreateTaskWizard({
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select priority">
                       <span className="flex items-center gap-2">
-                        <Flag
+                        <HugeiconsIcon
+                          icon={Flag01Icon}
                           size={14}
                           className={
                             priorityOptions.find((p) => p.value === priority)
@@ -237,7 +239,11 @@ export default function CreateTaskWizard({
                     {priorityOptions.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         <span className="flex items-center gap-2">
-                          <Flag size={14} className={opt.color} />
+                          <HugeiconsIcon
+                            icon={Flag01Icon}
+                            size={14}
+                            className={opt.color}
+                          />
                           {opt.label}
                         </span>
                       </SelectItem>
@@ -260,7 +266,10 @@ export default function CreateTaskWizard({
                       />
                     }
                   >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    <HugeiconsIcon
+                      icon={Calendar01Icon}
+                      className="mr-2 h-4 w-4"
+                    />
                     {dueDate ? formatPPP(dueDate) : 'Pick a date'}
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -268,7 +277,6 @@ export default function CreateTaskWizard({
                       mode="single"
                       selected={dueDate}
                       onSelect={setDueDate}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -323,13 +331,17 @@ export default function CreateTaskWizard({
               >
                 {createTodo.isPending ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" />
+                    <HugeiconsIcon
+                      icon={Loading01Icon}
+                      size={16}
+                      className="animate-spin"
+                    />
                     Creating...
                   </>
                 ) : (
                   <>
                     Continue
-                    <ArrowRight size={16} />
+                    <HugeiconsIcon icon={ArrowRight01Icon} size={16} />
                   </>
                 )}
               </Button>
@@ -343,7 +355,10 @@ export default function CreateTaskWizard({
             <div className="rounded-lg border bg-muted/30 p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                  <Check className="h-5 w-5 text-primary" />
+                  <HugeiconsIcon
+                    icon={Tick02Icon}
+                    className="h-5 w-5 text-primary"
+                  />
                 </div>
                 <div>
                   <p className="font-medium">{createdTodo.title}</p>
@@ -356,7 +371,11 @@ export default function CreateTaskWizard({
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Paperclip size={16} className="text-muted-foreground" />
+                <HugeiconsIcon
+                  icon={AttachmentIcon}
+                  size={16}
+                  className="text-muted-foreground"
+                />
                 <Label>Add Attachments</Label>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -376,7 +395,7 @@ export default function CreateTaskWizard({
                 Skip
               </Button>
               <Button onClick={handleFinish}>
-                <Check size={16} />
+                <HugeiconsIcon icon={Tick02Icon} size={16} />
                 Done
               </Button>
             </DialogFooter>

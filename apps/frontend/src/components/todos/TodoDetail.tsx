@@ -11,14 +11,15 @@ import { ScrollArea } from '#/components/ui/scroll-area'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs'
 import { CommentSection, AttachmentSection } from '#/components/todos'
 import type { PopulatedTodo } from '@tareas/zod'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Calendar,
-  Flag,
-  Tag,
-  ExternalLink,
-  MessageSquare,
-  Paperclip,
-} from 'lucide-react'
+  Calendar01Icon,
+  Flag01Icon,
+  Tag01Icon,
+  LinkSquare02Icon,
+  Comment01Icon,
+  AttachmentIcon,
+} from '@hugeicons/core-free-icons'
 import { Link } from '@tanstack/react-router'
 import type z from 'zod'
 import { formatDate } from '#/lib/dayjs'
@@ -65,7 +66,7 @@ export default function TodoDetail({ todo, isOpen, onClose }: TodoDetailProps) {
               onClick={onClose}
             >
               <Button variant="outline" size="sm">
-                <ExternalLink size={14} />
+                <HugeiconsIcon icon={LinkSquare02Icon} size={14} />
                 Open
               </Button>
             </Link>
@@ -80,7 +81,7 @@ export default function TodoDetail({ todo, isOpen, onClose }: TodoDetailProps) {
                 {todo.status.charAt(0).toUpperCase() + todo.status.slice(1)}
               </Badge>
               <Badge variant={priorityVariants[todo.priority]}>
-                <Flag size={12} className="mr-1" />
+                <HugeiconsIcon icon={Flag01Icon} size={12} className="mr-1" />
                 {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
               </Badge>
               {todo.category && (
@@ -93,7 +94,7 @@ export default function TodoDetail({ todo, isOpen, onClose }: TodoDetailProps) {
                     color: todo.category.color,
                   }}
                 >
-                  <Tag size={12} />
+                  <HugeiconsIcon icon={Tag01Icon} size={12} />
                   {todo.category.name}
                 </Badge>
               )}
@@ -101,7 +102,7 @@ export default function TodoDetail({ todo, isOpen, onClose }: TodoDetailProps) {
 
             {/* Due date */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar size={16} />
+              <HugeiconsIcon icon={Calendar01Icon} size={16} />
               <span>{formatDate(todo.dueDate)}</span>
             </div>
 
@@ -121,11 +122,11 @@ export default function TodoDetail({ todo, isOpen, onClose }: TodoDetailProps) {
             <Tabs defaultValue="comments" className="w-full">
               <TabsList className="w-full">
                 <TabsTrigger value="comments" className="flex-1 gap-2">
-                  <MessageSquare size={14} />
+                  <HugeiconsIcon icon={Comment01Icon} size={14} />
                   Comments ({todo.comments?.length ?? 0})
                 </TabsTrigger>
                 <TabsTrigger value="attachments" className="flex-1 gap-2">
-                  <Paperclip size={14} />
+                  <HugeiconsIcon icon={AttachmentIcon} size={14} />
                   Files ({todo.attachments?.length ?? 0})
                 </TabsTrigger>
               </TabsList>

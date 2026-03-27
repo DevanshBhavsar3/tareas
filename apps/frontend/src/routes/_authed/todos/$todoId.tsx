@@ -24,18 +24,19 @@ import {
 import { QUERY_KEYS } from '#/api/query-keys'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  ArrowLeft,
-  Calendar,
-  Flag,
-  Tag,
-  Pencil,
-  Trash2,
-  MessageSquare,
-  Paperclip,
-  Clock,
-  CheckCircle2,
-} from 'lucide-react'
+  ArrowLeft01Icon,
+  Calendar01Icon,
+  Flag01Icon,
+  Tag01Icon,
+  Edit01Icon,
+  Delete01Icon,
+  Comment01Icon,
+  AttachmentIcon,
+  Clock01Icon,
+  CheckmarkCircle02Icon,
+} from '@hugeicons/core-free-icons'
 import { useState } from 'react'
 import type { PopulatedTodo } from '@tareas/zod'
 import type z from 'zod'
@@ -167,12 +168,15 @@ function TodoPage() {
             to="/todos"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
           >
-            <ArrowLeft size={16} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
             Back to tasks
           </Link>
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="rounded-full bg-destructive/10 p-4 mb-4">
-              <Flag className="h-8 w-8 text-destructive" />
+              <HugeiconsIcon
+                icon={Flag01Icon}
+                className="h-8 w-8 text-destructive"
+              />
             </div>
             <h1 className="text-xl font-semibold mb-2">Task not found</h1>
             <p className="text-muted-foreground mb-6">
@@ -198,7 +202,7 @@ function TodoPage() {
           to="/todos"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
-          <ArrowLeft size={16} />
+          <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
           Back to tasks
         </Link>
 
@@ -228,15 +232,15 @@ function TodoPage() {
             <div className="flex flex-wrap items-center gap-2">
               <Badge className={cn('gap-1', statusConfig[todo.status].color)}>
                 {todo.status === 'completed' ? (
-                  <CheckCircle2 size={12} />
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} size={12} />
                 ) : (
-                  <Clock size={12} />
+                  <HugeiconsIcon icon={Clock01Icon} size={12} />
                 )}
                 {statusConfig[todo.status].label}
               </Badge>
 
               <Badge variant={priorityConfig[todo.priority].variant}>
-                <Flag size={12} className="mr-1" />
+                <HugeiconsIcon icon={Flag01Icon} size={12} className="mr-1" />
                 {priorityConfig[todo.priority].label} Priority
               </Badge>
 
@@ -250,7 +254,7 @@ function TodoPage() {
                     color: todo.category.color,
                   }}
                 >
-                  <Tag size={12} />
+                  <HugeiconsIcon icon={Tag01Icon} size={12} />
                   {todo.category.name}
                 </Badge>
               )}
@@ -264,7 +268,7 @@ function TodoPage() {
               size="sm"
               onClick={() => setShowEditForm(true)}
             >
-              <Pencil size={14} />
+              <HugeiconsIcon icon={Edit01Icon} size={14} />
               Edit
             </Button>
             <Button
@@ -272,7 +276,7 @@ function TodoPage() {
               size="sm"
               onClick={() => setShowDeleteDialog(true)}
             >
-              <Trash2 size={14} />
+              <HugeiconsIcon icon={Delete01Icon} size={14} />
               Delete
             </Button>
           </div>
@@ -287,7 +291,7 @@ function TodoPage() {
               : 'border-border bg-muted/30',
           )}
         >
-          <Calendar size={16} />
+          <HugeiconsIcon icon={Calendar01Icon} size={16} />
           <span className="font-medium">Due:</span>
           <span>{formatDateLong(todo.dueDate)}</span>
           {overdue && <span className="font-medium">(Overdue)</span>}
@@ -313,11 +317,11 @@ function TodoPage() {
         <Tabs defaultValue="comments" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="comments" className="gap-2">
-              <MessageSquare size={14} />
+              <HugeiconsIcon icon={Comment01Icon} size={14} />
               Comments ({todo.comments?.length ?? 0})
             </TabsTrigger>
             <TabsTrigger value="attachments" className="gap-2">
-              <Paperclip size={14} />
+              <HugeiconsIcon icon={AttachmentIcon} size={14} />
               Attachments ({todo.attachments?.length ?? 0})
             </TabsTrigger>
           </TabsList>
