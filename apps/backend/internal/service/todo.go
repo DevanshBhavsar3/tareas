@@ -213,7 +213,7 @@ func (s *TodoService) UploadTodoAttachment(ctx echo.Context, userID string, payl
 	s3Key, err := s.awsClient.S3.UploadFile(
 		ctx.Request().Context(),
 		s.server.Config.AWS.UploadBucket,
-		"todos/attachments/"+payload.File.Filename,
+		payload.File.Filename,
 		src,
 	)
 	if err != nil {
