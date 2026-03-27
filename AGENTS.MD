@@ -89,4 +89,4 @@ bun format               # Run code formatter
 ### Code Style
 - **Linter/Formatter**: Prettier
 - **Import Aliases**: Use `@/` for imports (e.g., `@/components/...`)
-- **Styling**: Tailwind CSS with ShandCN UI components
+- **Styling**: Tailwind CSS with ShandCN UI components & Huge Icons
