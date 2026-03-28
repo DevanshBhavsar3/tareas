@@ -2,54 +2,57 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"net/http"
 
+	"github.com/DevanshBhavsar3/tareas/internal/config"
 	"github.com/DevanshBhavsar3/tareas/internal/cron"
-	"github.com/spf13/cobra"
+	"github.com/labstack/echo/v5"
 )
 
 func main() {
-	rootCmd := &cobra.Command{
-		Use:   "cron",
-		Short: "Tareas Cron Job Runner",
-		Long:  "Tareas Cron Job Runner - Execute scheduled jobs for the Tareas - task management system",
-	}
-
+	cfg := config.Load()
+	e := echo.New()
 	registry := cron.NewJobRegistry()
 
-	listCmd := &cobra.Command{
-		Use:   "list",
-		Short: "List available cron jobs",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Print(registry.Help())
-		},
-	}
-	rootCmd.AddCommand(listCmd)
+	fmt.Println(cfg.Cron.CRON_SECRET)
 
-	for _, jobName := range registry.List() {
-		job, _ := registry.Get(jobName)
+	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c *echo.Context) error {
+			token := c.Request().Header.Get("Authorization")
+			if token != "Bearer "+cfg.Cron.CRON_SECRET {
+				return c.String(http.StatusUnauthorized, "Unauthorized")
+			}
 
-		jobCmd := &cobra.Command{
-			Use:   job.Name(),
-			Short: job.Description(),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				runner, err := cron.NewJobRunner(job)
-				if err != nil {
-					return fmt.Errorf("failed to create job runner: %w", err)
-				}
+			return next(c)
+		}
+	})
 
-				if err := runner.Run(); err != nil {
-					return fmt.Errorf("job failed: %w", err)
-				}
+	e.GET("/cron", func(c *echo.Context) error {
+		jobs := registry.List()
+		return c.JSON(http.StatusOK, jobs)
+	})
 
-				return nil
-			},
+	e.POST("/cron/:job", func(c *echo.Context) error {
+		jobName := c.Param("job")
+
+		job, err := registry.Get(jobName)
+		if err != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 		}
 
-		rootCmd.AddCommand(jobCmd)
-	}
+		runner, err := cron.NewJobRunner(job)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
 
-	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
+		if err := runner.Run(); err != nil {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+
+		return c.String(http.StatusOK, "Job executed successfully")
+	})
+
+	if err := e.Start(":8080"); err != nil {
+		e.Logger.Error("Failed to start server: ", "error", err)
 	}
 }

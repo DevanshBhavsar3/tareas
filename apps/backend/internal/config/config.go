@@ -91,10 +91,11 @@ type NewRelicConfig struct {
 }
 
 type CronConfig struct {
-	ArchiveDaysThreshold        int `koanf:"archive_days_threshold" validate:"required"`
-	BatchSize                   int `koanf:"batch_size" validate:"required"`
-	ReminderHours               int `koanf:"reminder_hours" validate:"required"`
-	MaxTodosPerUserNotification int `koanf:"max_todos_per_user_notification" validate:"required"`
+	CRON_SECRET                 string `koanf:"cron_secret" validate:"required"`
+	ArchiveDaysThreshold        int    `koanf:"archive_days_threshold" validate:"required"`
+	BatchSize                   int    `koanf:"batch_size" validate:"required"`
+	ReminderHours               int    `koanf:"reminder_hours" validate:"required"`
+	MaxTodosPerUserNotification int    `koanf:"max_todos_per_user_notification" validate:"required"`
 }
 
 func Load() *Config {
